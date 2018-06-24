@@ -27,21 +27,33 @@ switch($msg_id){
 	{
 		foreach($msg_data['server'] as $server_id=>$choosen){
 			if($choosen == 1){
+				$sql = "SELECT gm_server_list.server_id,server_ssh.ip,port,username,passwd,location FROM gm_server_list LEFT OUTER JOIN server_ssh ON gm_server_list.server_id=server_ssh.server_id LEFT OUTER JOIN ssh_user ON server_ssh.ip=ssh_user.ip AND username=user";
+				$result = $db_con->query($sql);
+				$data = mysqli_fetch_array($result, $MYSQLI_ASSOC);
+				$ip = $data['ip'];
+				$port = $data['port'];
+				$user = $data['username'];
+				$passwd = $data['passwd'];
+				$location = $data['location'];
 				$conn = ssh2_connect($ip,$port);
-				ssh2_auth_password($conn, $user $passwd);
+				ssh2_auth_password($conn, $user, $passwd);
 				$cmd = "cd {$location}";
 				ssh2_exec($conn, $cmd);
 				switch($msg_data['oper']){
 					case 'server_start':
-					$cmd = 'sh run.sh';
-					ssh2_exec($conn, $cmd);
-					ssh2_exec($conn, 'y');
-					break;
+						$cmd = 'sh run.sh';
+						ssh2_exec($conn, $cmd);
+						$stream = ssh2_exec($conn, 'y');
+						stream_set_blocking($stream, true);
+						$result_string = stream_get_contents($stream);
+						echo {};
+						break;
 					case 'server_shut':
-					$cm = 'sh stop.sh';
-					ssh2_exec($conn, $cmd);
-					ssh2_exec($conn, $y);
-					break;
+						$cm = 'sh stop.sh';
+						ssh2_exec($conn, $cmd);
+						ssh2_exec($conn, $y);
+						echo {};
+						break;
 				}
 			}
 		}
