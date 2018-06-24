@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>配置热更新</title>
+  <link rel="stylesheet" href="../lib/layui/css/layui.css">
+</head>
+<body>
+<table class="layui-table">
+	<colgroup>
+    <col width="150">
+    <col width="200">
+    <col>
+  </colgroup>
+  <thead>
+    <tr>
+      <th>参数名</th>
+      <th>说明</th>
+      <th>值</th>
+      <th>可否热更新</th>
+    </tr> 
+  </thead>
+  <tbody>
+
+<?php
+
+function genHTMLString($input_string, $val, $comment, $can_modify, &$array_save_data, &$array_can_be_updated){
+	$html_string = '<tr>';
+	$html_string .= '<td>' . $input_string . '</td>';
+	$html_string .= '<td>' . $comment . '</td>';
+	$html_string .= '<td>' . $val . '</td>';
+	$yes_or_no = '否';
+	if($can_modify == 1){
+		$yes_or_no = '是';
+	}
+	$html_string .= '<td>' . $yes_or_no . '</td>';
+	$html_string .= '</tr>';
+	// $html_string .= '<div class="layui-inline">';
+	// $html_string .= 	'<label class="layui-form-label" >' . $comment . '<br>' . $input_string . ':<br>' . $val . '</label><br>';
+
+
+	// if($can_modify == 1){
+	// 	$html_string = 	'<div class="layui-form-item">';
+	// 	$html_string .=  	'<div class="layui-input-inline">';
+	// 	$html_string .=  		'<input type="text" name="' . $input_string . '" autocomplete="off" class="layui-input">';
+	// 	$html_string .= 	'</div>';
+	// 	$html_string .= '</div>';
+	// 	// $html_string .=  	'<button class="layui-btn" lay-submit lay-filter="' . $input_string . '-modify">修改</button>';
+	// 	// $html_string .=  	'<button class="layui-btn" lay-submit lay-filter="' . $input_string . '-revert">还原</button>';
+	// }
+	
+	//$html_string .= 	'</div>';
+	//echo $html_string;
+	$array_save_data[$input_string] = $html_string;
+	if($can_modify == 1){
+		array_push($array_can_be_updated, $input_string);
+	}
+}
+
+function moveMysqlToHTML($root, $ip, $user_name, $passwd, $database, $table){	
+	$con = mysql_connect($ip, $user_name, $passwd);
+	if(!$con){
+		die("Could not connect: " . mysql_error());
+	}
+	mysql_select_db($database, $con);
+	mysql_query("set names 'utf8'");
+	$ret = mysql_query("SELECT * FROM {$table}", $con);
+	if($ret === false){
+		die(mysql_error());
+	}
+
+	$xml_name_without_postfix = $root;
+	$array_html_string = array();
+	$array_can_be_updated = array();
+	$i = 0;
+	while($array_data = mysql_fetch_array($ret, MYSQL_NUM)){
+		$i++;
+		$name = $array_data[0];
+		$value = $array_data[1];
+		$show = $array_data[2];
+		$hot_update = $array_data[3];
+		$comment = $array_data[4];
+		// echo $name . "\n";
+		// echo $value . "\n";
+		// echo $show . "\n";
+		// echo gettype($show);
+		// echo $hot_update . "\n";
+		// echo $comment . "\n";
+		if($show == 1){
+			if(genHTMLString($name, $value, $comment, $hot_update, $array_html_string, $array_can_be_updated) === false){
+				echo "Not Be Inserted into XML!\nname:" . $name . "\nvalue:" . $value . "\n";
+			}
+		}
+		// if($i === 2)
+		// 	break;
+	}
+	mysql_close($con);
+	foreach($array_html_string as $key=>$html_string){
+		echo $html_string;
+	}
+
+	echo '</tbody>';
+	echo '</table>';
+	echo '<form class="layui-form" action="">';
+	echo '<div class="layui-form-item">';
+	echo '<label class="layui-form-label">选择参数</label>';
+	echo '<div class="layui-input-block">';
+	echo '  <select name="label_name" lay-verify="required" lay-filter="choose">';
+	echo '    <option value=""></option>';
+	for($i = 0; $i < count($array_can_be_updated); $i++){
+		echo '<option value="' . $array_can_be_updated[$i] . '">' . $array_can_be_updated[$i] . '</option>'; 
+	}
+	echo '  </select>';
+	echo '</div>';
+	echo '</div>';
+	
+}
+
+$table_name = $_POST["table_name"];
+$table_name = "wangmeijie";
+moveMysqlToHTML("server", 
+		"127.0.0.1",
+		"root",
+		"Sanguo1!",
+		"config",
+		$table_name);
+?>
+
+<div class="layui-form-item">
+    <label class="layui-form-label">输入值</label>
+    <div class="layui-input-block">
+      <input type="text" name="value" required  lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+    </div>
+</div>
+
+<div class="layui-form-item">
+	<div class="layui-input-block">
+	  <button class="layui-btn" lay-submit lay-filter="formDemo">更改</button>
+	  <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+	  <button class="layui-btn layui-btn-danger" onclick="disp_confirm('GameServer')">重载GameServer</button>
+	  <button class="layui-btn layui-btn-danger" onclick="disp_confirm('CenterServer')">重载CenterServer</button>
+	</div>
+</div>
+
+</form>
+
+<!--_footer 作为公共模版分离出去-->
+<script type="text/javascript" src="../lib/jquery/1.9.1/jquery.min.js"></script> 
+<script type="text/javascript" src="../static/h-ui/js/H-ui.min.js"></script> 
+<script type="text/javascript" src="../static/h-ui.admin/js/H-ui.admin.js"></script> <!--/_footer 作为公共模版分离出去-->
+
+<script type="text/javascript" src="../lib/My97DatePicker/4.8/WdatePicker.js"></script>
+<script type="text/javascript" src="../lib/datatables/1.10.0/jquery.dataTables.min.js"></script> 
+<script type="text/javascript" src="../lib/layui/layui.js" charset="utf-8"></script>
+<script type="text/javascript" src="../js/server_list_common.js" charset="utf-8"></script>
+<script type="text/javascript" src="../js/common.js" charset="utf-8"></script>
+
+<script>
+
+function disp_confirm(server_name)
+{
+	var r=confirm("你确定要重载" + server_name + "的表格吗?")
+	if (r==true)
+	{
+		document.write("You pressed OK!")
+		$.ajax({
+          type: "POST",
+          url: '../sg_gm/reload_xml.php',
+          dataType: "json",
+          data: {"server_name" : server_name},
+          success: function (json) {
+              console.log(json)
+              //page(data_mod(json,'recharge_log'),1);
+              //table.render();
+              layer.msg("成功", { icon: 6, time: 2000 });
+          },
+          error: function (er) {
+              console.log(er);
+              //renderForm();
+              layer.msg("错误", { icon: 5, time: 2000 });
+          },
+        });
+	}
+}
+
+//Demo
+layui.use('form', function(){
+  var form = layui.form;
+  
+  //监听选择
+  // form.on('select(choose)', function(data){
+	 //  console.log(data.elem); //得到select原始DOM对象
+	 //  console.log(data.value); //得到被选中的值
+	 //  console.log(data.othis); //得到美化后的DOM对象
+	 //  form.val("formDemo", "abcdef");
+  // });      
+
+  //监听提交
+  form.on('submit(formDemo)', function(data){
+
+    layer.msg(JSON.stringify(data.field));
+    console.log(data.field);
+    console.log(data.form);
+    console.log(data.elem);
+    $.ajax({
+          type: "POST",
+          url: '../sg_gm/set_server_config_in_mysql.php',
+          dataType: "json",
+          data: data.field,
+          success: function (json) {
+              console.log(json);
+              //page(data_mod(json,'recharge_log'),1);
+              //table.render();
+              layer.msg("成功", { icon: 6, time: 2000 });
+          },
+          error: function (er) {
+              console.log(er);
+              //renderForm();
+              layer.msg("错误", { icon: 5, time: 2000 });
+          },
+        });
+
+    return false;
+  });
+});
+</script>
+
+</body>

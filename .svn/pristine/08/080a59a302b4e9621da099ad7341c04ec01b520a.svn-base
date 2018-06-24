@@ -1,0 +1,32 @@
+<?php
+
+require_once("../sg_gm/db_connect.php");
+
+$changed_data = $_POST['changed_data'];
+$table_name = $_POST['table_name'];
+try{
+
+    $db_con = get_connect("server_config");
+    if($db_con->connect_errno)
+    {
+        $db_con = NULL;
+        die("连接错误:".$db_con->connect_errno);
+    }
+    mysqli_autocommit($db_con,FALSE);
+    foreach($changed_data as $label_name => $value){
+        $sql = "UPDATE {$table_name} SET value = '{$value}' WHERE name = '{$label_name}'";
+        $result = $db_con->query($sql);
+        if($result == false){
+            mysqli_rollback($db_con);
+            die("更新mysql错误" . $sql . mysql_error());
+        }
+    }
+    mysqli_commit($db_con);
+    echo "{}";  
+
+}catch (Exception $exception)
+{
+    die($exception);
+}
+
+?>

@@ -1,0 +1,340 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+<!--[if lt IE 9]>
+<script type="text/javascript" src="lib/html5shiv.js"></script>
+<script type="text/javascript" src="lib/respond.min.js"></script>
+<![endif]-->
+    <link rel="stylesheet" type="text/css" href="../dep/static/h-ui/css/H-ui.min.css" />
+  <link rel="stylesheet" type="text/css" href="../dep/static/h-ui.admin/css/H-ui.admin.css" />
+  <link rel="stylesheet" type="text/css" href="../dep/lib/Hui-iconfont/1.0.8/iconfont.css" />
+  <link rel="stylesheet" type="text/css" href="../dep/static/h-ui.admin/skin/default/skin.css" id="skin" />
+  <link rel="stylesheet" type="text/css" href="../dep/static/h-ui.admin/css/style.css" />
+  <link rel="stylesheet" type="text/css" href="../dep/lib/layui/css/layui.css"/>
+  <script type="text/javascript" src="../dep/lib/jquery/1.9.1/jquery.min.js"></script> 
+  <script type="text/javascript" src="../dep/static/h-ui/js/H-ui.min.js"></script> 
+  <script type="text/javascript" src="../dep/static/h-ui.admin/js/H-ui.admin.js"></script>
+  <script type="text/javascript" src="../dep/lib/My97DatePicker/4.8/WdatePicker.js"></script>
+  <script type="text/javascript" src="../dep/lib/datatables/1.10.0/jquery.dataTables.min.js"></script> 
+  <script type="text/javascript" src="../dep/lib/layui/layui.js" charset="utf-8"></script>
+  <script type="text/javascript" src="../dep/js/server_list_common.js" charset="utf-8"></script>
+  <script type="text/javascript" src="../dep/js/common.js" charset="utf-8"></script>
+  <script type="text/javascript" src="../dep/lib/hcharts/Highcharts/5.0.6/js/highcharts.js"></script>
+  <script type="text/javascript" src="../dep/lib/hcharts/Highcharts/5.0.6/js/modules/exporting.js"></script>
+  <script type="text/javascript" src="../dep/js/config.js" charset="utf-8"></script>
+<!--[if IE 6]>
+<script type="text/javascript" src="lib/DD_belatedPNG_0.0.8a-min.js" ></script>
+<script>DD_belatedPNG.fix('*');</script>
+<![endif]-->
+<title>后台监控</title>
+<style type="text/css">
+html,body{height:auto;}
+#suggest, #suggest2 {width:200px;}
+.gray {color:gray;}
+.ac_results {background:#fff;border:1px solid #7f9db9;position: absolute;z-index: 10000;display: none;}
+.ac_results li a {white-space: nowrap;text-decoration:none;display:block;color:#05a;padding:1px 3px;}
+.ac_results li {border:1px solid #fff;}
+.ac_over, .ac_results li a:hover {background:#c8e3fc;}
+.ac_results li a span {float:right;}
+.ac_result_tip {border-bottom:1px dashed #666;padding:3px;}
+body{overflow-y: scroll;}
+</style>
+
+</head>
+<body>
+<div class="layui-tab layui-tab-card">
+  <ul class="layui-tab-title">
+    <li class="layui-this">服务器操作</li>
+    <li>操作记录</li>
+  </ul>
+  <div class="layui-tab-content">
+    <div class="layui-tab-item layui-show">
+      <!-- 分页数据 -->
+      <div class="layui-fluid"> 
+      <form class="layui-form" action="">
+      
+        <div class="layui-row">
+            <div class="layui-col-lg1">
+                <label class="layui-form-label">游戏</label>
+            </div>
+            <div class="layui-col-lg4">
+                <select name="choose_game">
+                  <option value="">请选择游戏</option>
+                  <option value="0">少年逆命师</option>
+                </select>
+            </div>
+
+            <div class="layui-col-lg1">
+                <label class="layui-form-label">服务器组</label>
+            </div>
+
+            <div class="layui-col-lg4">
+                <select name="choose_server" id='group'>
+                  <option value="">请选择服务器</option>
+                </select>
+            </div>
+
+            <div class="layui-col-lg1 layui-col-md-offset1">
+              <button class="layui-btn" lay-submit lay-filter='filter'>筛选</button> 
+            </div>
+        </div>
+        <div class="layui-row">
+          <div class="layui-input-block"></div>
+        </div>
+        <div class="layui-row">
+      
+          <div class="layui-col-lg3 layui-col-md-offset1">
+            <input type="radio" name="operation" value="server-start" title="开启服务器">
+          </div>
+          <div class="layui-col-lg3">
+            <input type="radio" name="operation" value="server-shut" title="关闭服务器">
+          </div>
+          <div class="layui-col-lg3">
+            <input type="radio" name="operation" value="server-restart" title="重启服务器">
+          </div>
+        
+          <div class="layui-col-lg1 layui-col-md-offset1">
+            <button class="layui-btn" lay-submit lay-filter='exec'>执行</button> 
+          </div>           
+        </div>
+      </form>
+      <table class="layui-table">
+        <colgroup>
+          <col width="150">
+          <col width="200">
+          <col>
+        </colgroup>
+        <thead>
+          <tr>
+            <th>
+              <button class="layui-btn">全选</button>
+            </th>
+            <th>服务器组</th>
+            <th>服务器名称</th>
+            <th>服务器ID</th>
+            <th>服务器IP</th>
+            <th>当前状态</th>
+          </tr> 
+        </thead>
+        <tbody id='main'>
+<!--           <tr>
+            <td>
+              <form class="layui-form" action="">
+                <div class="layui-form-item">
+                  <input type="checkbox">
+                </div>
+              </form>
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr> -->
+        </tbody>
+      </table>
+    </div>
+    </div>
+    <div class="layui-tab-item">
+      <div class="layui-fluid"> 
+        <form class="layui-form" action="">
+          <div class="layui-row">
+            <div class="layui-col-lg1">
+              <input type="radio" name="query_choice" value="group" title="服务器组">
+            </div>
+            <div class="layui-col-lg3">
+              <select name="choose_server" lay-verify="required">
+                <option value="">请选择服务器组</option>
+                <option value="0">美国</option>
+              </select>
+            </div>
+            <div class="layui-col-lg1  layui-col-md-offset1">
+              <input type="radio" name="query_choice" value="single" title="服务器名称">
+            </div>
+            <div class="layui-col-lg3">
+              <select name="choose_server" lay-verify="required">
+                <option value="">请选择服务器</option>
+                <option value="0">开天辟地</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="layui-row">
+          </div>
+        </form>
+
+        <div class="layui-row">
+          <div class="layui-col-lg1 layui-col-md-offset3">
+                <label class="layui-form-label">日期范围</label>
+            </div>
+          <div class="layui-col-lg2">
+            <input type="text" class="layui-input" id="date">
+          </div>
+          <div class="layui-col-lg1 layui-col-md-offset2">
+            <button class="layui-btn">查询</button> 
+          </div> 
+        </div>
+        <table class="layui-table">
+        <colgroup>
+          <col width="150">
+          <col width="200">
+          <col>
+        </colgroup>
+        <thead>
+          <tr>
+            <th>服务器组</th>
+            <th>服务器名称</th>
+            <th>操作类型</th>
+            <th>操作用户</th>
+            <th>操作时间</th>
+          </tr> 
+        </thead>
+        <tbody>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   -->
+
+<script>
+layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
+  var laydate = layui.laydate;
+  var form = layui.form;
+  var layer = layui.layer;
+  //执行一个laydate实例
+  laydate.render({
+    elem: '#date',
+    range: '~'
+  });
+
+  //监听【执行】按钮
+  form.on('submit(exec)', function(data){
+    console.log(data);
+    console.log(server_checked);
+    var send_data = {
+      'oper' : data.value,
+      'server' : server_checked
+    };
+    send_msg_to_server(2, send_data, function(res){
+      console.log(res);
+    });
+    // $.ajax({
+    //   url: '../php/php/test.php',
+    //   success:function(data){
+    //     console.log('succ');
+    //     console.log(data);
+    //   },
+    //   error:function(data){
+    //     console.log(data);
+    //   },
+    // });
+    // layer.open({
+    //   type: 2,
+    //   content: ['test.html', 'no'],
+    //   success: function(layero, index){
+    //     var bodyDOM = layer.getChildFrame('#show_text', index);
+    //     console.log(bodyDOM);
+    //     bodyDOM[0].innerText='abcdefg';
+    //     bodyDOM[0].innerText=bodyDOM[0].innerText + '\nhijklmn';
+    //   }
+    // });
+    return false;
+  });
+
+  //监听【筛选】按钮
+  var server_data  = {};
+  var server_checked = {};
+  form.on('submit(filter)', function(data){
+    console.log(data);
+    console.log(server_group_data);
+    var group_name = data.field.choose_server;
+    var start_id = server_group_data[group_name]['group_start_id'];
+    var end_id = server_group_data[group_name]['group_end_id'];
+    var send_data = {
+      'start_id' : start_id,
+      'end_id' : end_id
+    };
+    send_msg_to_server(1, send_data, function(res){
+      console.log(res);
+      server_data = {};
+      server_checked = {};
+      $('#main').empty();
+      for(idx in res){
+        var tr_xml = '<tr id=' + res[idx]['server_id'] + '>';
+        $('#main').append(tr_xml);
+        
+        var button_xml = '<td><form class="layui-form" action=""><div class="layui-form-item"><input type="checkbox"';
+        if(res[idx]['ip'] === null){
+          button_xml += ' disabled';
+        }
+        button_xml += ' value="' + res[idx]['server_id'] + '"';
+        button_xml += '></div></form></td>';
+        $('#main').append(button_xml);
+        $('#main').append('<td>' + group_name + '</td>');
+        $('#main').append('<td>' + res[idx]['server_name'] + '</td>');
+        $('#main').append('<td>' + res[idx]['server_id'] + '</td>');
+        $('#main').append('<td>' + res[idx]['ip'] + '</td>');
+        $('#main').append('<td id=state' + res[idx]['server_id'] + '>' + '宕机' + '</td>');
+        $('#main').append('</tr>');
+        server_data[res[idx]['server_id']] = res[idx];
+      }
+      renderForm();
+    });
+    return false;
+  });
+
+  //监听checkbox
+  form.on('checkbox()', function(data){
+    console.log(data);
+    if(data.elem.checked){
+      server_checked[data.value] = 1;
+    }
+    else{
+      server_checked[data.value] = 0;
+    }
+  });
+});
+
+//页面预加载
+var server_group_data = {};
+$(document).ready(function(){
+  var data = [{
+    'table_name':'server_group',
+  }];
+  get_need_info_and_callback_it('sg_gm', data, function(res){
+    console.log(res);
+    for(idx in res){
+      $('#group').append("<option value='" + res[idx]['group_name'] + "'>"+res[idx]['group_name']+"</option>");
+      server_group_data[res[idx]['group_name']] = res[idx];
+    }
+    renderForm();
+  });
+
+  get_server_list_with_callback(function(list){
+    for(var i = 0; i < list.length; i++)
+    {
+      $("#idchoose").append("<option value='"+list[i].id+"'>"+list[i].name+"</option>");
+    }
+    renderForm();
+  });
+});
+</script>
+
+</body>
+</html>

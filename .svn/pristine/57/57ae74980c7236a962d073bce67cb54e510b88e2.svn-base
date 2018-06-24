@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>layPage快速使用</title>
+</head>
+<body>
+ 
+<div id="test1"></div>
+ 
+<script src="../tmp/test1.js"></script>
+</body>
+</html>
