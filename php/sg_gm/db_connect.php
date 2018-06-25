@@ -39,8 +39,7 @@ function get_connect($type,$param = "")
     if($conn->connect_errno)
     {
         //$conn = NULL;
-        die("连接错误:".$conn->connect_errno);
-        return $conn;
+        throw new Exception("Connect db{$type} error:" . $conn->connect_errno);
     }
     else
     {

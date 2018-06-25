@@ -1,11 +1,24 @@
 <?php
 
 require_once("../sg_gm/db_connect.php");
+require_once("../sg_gm/lib/log_debug.php");
+require_once("../util/ssh2_obj.php");
 
 $msg_id = $_POST['msg_id'];
-$msg_data = $_POST['msg_data'];
+$msg_data = json_decode($_POST['msg_data'], true);
 
-
+function get_ssh_need_info($db_con, $server_id){
+	$sql = "SELECT gm_server_list.server_id,server_ssh.ip,ssh_port,username,passwd,location FROM gm_server_list LEFT OUTER JOIN server_ssh ON gm_server_list.server_id=server_ssh.server_id LEFT OUTER JOIN ssh_user ON server_ssh.ip=ssh_user.ip AND username=user WHERE gm_server_list.server_id={$server_id}";
+	$result = $db_con->query($sql);
+	if($result == false){
+		throw new Exception("QUERY FAILED:" . $sql . $this->m_db_con->error);
+	}
+	$data = mysqli_fetch_array($result, MYSQLI_ASSOC);
+	if($data == false){
+		throw new Exception("NO SUCH DATA, SERVER_ID:" . $server_id);
+	}
+	return $data;
+}
 
 switch($msg_id){
 	case 1:
@@ -25,38 +38,53 @@ switch($msg_id){
 	break;
 	case 2:
 	{
+		log_debug(print_r($msg_data, true));
+		$res = array();
 		foreach($msg_data['server'] as $server_id=>$choosen){
 			if($choosen == 1){
-				$sql = "SELECT gm_server_list.server_id,server_ssh.ip,port,username,passwd,location FROM gm_server_list LEFT OUTER JOIN server_ssh ON gm_server_list.server_id=server_ssh.server_id LEFT OUTER JOIN ssh_user ON server_ssh.ip=ssh_user.ip AND username=user";
-				$result = $db_con->query($sql);
-				$data = mysqli_fetch_array($result, $MYSQLI_ASSOC);
+				$db_con = get_connect('sg_gm');
+				$data = get_ssh_need_info($db_con, $server_id);
+				log_debug(print_r($data, true));
 				$ip = $data['ip'];
-				$port = $data['port'];
+				$port = $data['ssh_port'];
 				$user = $data['username'];
 				$passwd = $data['passwd'];
 				$location = $data['location'];
-				$conn = ssh2_connect($ip,$port);
-				ssh2_auth_password($conn, $user, $passwd);
-				$cmd = "cd {$location}";
-				ssh2_exec($conn, $cmd);
+				$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
 				switch($msg_data['oper']){
-					case 'server_start':
-						$cmd = 'sh run.sh';
-						ssh2_exec($conn, $cmd);
-						$stream = ssh2_exec($conn, 'y');
-						stream_set_blocking($stream, true);
-						$result_string = stream_get_contents($stream);
-						echo {};
+					case 'server-start':
+						$cmd = 'sh ' . $location . '/run.sh -y';
+						$result_string = $ssh2_obj->sync_operation($cmd);
+						log_debug($result_string);
+						$res[$server_id] = $result_string;
 						break;
-					case 'server_shut':
-						$cm = 'sh stop.sh';
-						ssh2_exec($conn, $cmd);
-						ssh2_exec($conn, $y);
-						echo {};
+					case 'server-shut':
+						$cmd = 'sh ' . $location . '/stop.sh -y';
+						$result_string = $ssh2_obj->sync_operation($cmd);
+						log_debug($result_string);
+						$res[$server_id] = $result_string;
 						break;
 				}
 			}
 		}
+		echo json_encode($res);
+	}
+	break;
+	case 3:
+	{
+		log_debug($msg_data);
+		$db_con = get_connect('sg_gm');
+		$data = get_ssh_need_info($db_con, $msg_data);
+		log_debug(print_r($data, true));
+		$ip = $data['ip'];
+		$port = $data['ssh_port'];
+		$user = $data['username'];
+		$passwd = $data['passwd'];
+		$location = $data['location'];
+		log_debug(print_r($data, true));
+		$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
+		$cmd = 'sh ' . $location . '/check.sh';
+		echo json_encode($ssh2_obj->sync_operation($cmd));
 	}
 	break;
 	default:
