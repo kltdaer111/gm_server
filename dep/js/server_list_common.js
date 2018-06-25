@@ -166,7 +166,7 @@ function send_msg_to_server(msg_id, msg_data, call_back)
     dataType:"json",
     data:{
       'msg_id' : msg_id,
-      'msg_data' : msg_data,
+      'msg_data' : JSON.stringify(msg_data)
     },
     success:function(res){
       if(call_back !== undefined){
@@ -174,6 +174,7 @@ function send_msg_to_server(msg_id, msg_data, call_back)
       }
     },
     error:function(err){
+      console.log('1111111111122222');
       console.log('ERROR:' + msg_id + msg_data);
       console.log(err);
     }

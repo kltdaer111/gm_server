@@ -213,6 +213,67 @@ body{overflow-y: scroll;}
 <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   -->
 
 <script>
+var server_status = {};
+var server_timer = {};
+var CHECK_INTERVAL = 5000;  //ms
+var LOCAL_SERVER = ['db_server', 'log_server', 'gm_server', 'game_server', 'center_server', 'chat_server', 'gate_server', 'login_server'];
+var GLOBAL_SERVER = ['account_server', 'glog_server', 'area_server', 'transfer_server', 'cross_server'];
+var NOT_WORKING_DESCRIPTION = 'has been stop';
+var WORING_DESCRIPTION = 'is running';
+var 
+function check_server_state(server_id){
+  send_msg_to_server(3, server_id, function(res){
+    console.log('server_id:' + server_id);
+    console.log(res);
+
+  });
+}
+
+function start_interval_check(server_id){
+  var timer_id = setInterval(function(){check_server_state(server_id)}, CHECK_INTERVAL);
+  server_timer[server_id] = timer_id;
+}
+
+function stop_interval_check(server_id){
+  var timer_id = server_timer[server_id];
+  clearInterval(timer_id);
+}
+
+function do_server_operation(m_server_checked, oper){
+  for(idx in m_server_checked){
+    switch(oper){
+    case 'server-start':
+      $('#state' + idx).text('开启中');
+      break;
+    case 'server-shut':
+      $('#state' + idx).text('关闭中');
+      break;
+    }
+  }
+  renderForm();
+  var send_data = {
+      'oper' : oper,
+      'server' : m_server_checked
+    };
+  send_msg_to_server(2, send_data, function(resdata){
+      console.log('exec');
+      console.log(resdata);
+      for(idx in resdata){
+        if(resdata[idx].indexOf('错误') == -1 && resdata[idx].indexOf('error') == -1 && resdata[idx].indexOf('fail') == -1){
+          switch(oper){
+          case 'server-start':
+            $('#state' + idx).text('开启');
+            break;
+          case 'server-shut':
+            $('#state' + idx).text('关闭');
+            break;
+          }
+        }
+        renderForm();
+      }
+  });
+}
+
 layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
   var laydate = layui.laydate;
   var form = layui.form;
@@ -227,33 +288,7 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
   form.on('submit(exec)', function(data){
     console.log(data);
     console.log(server_checked);
-    var send_data = {
-      'oper' : data.value,
-      'server' : server_checked
-    };
-    send_msg_to_server(2, send_data, function(res){
-      console.log(res);
-    });
-    // $.ajax({
-    //   url: '../php/php/test.php',
-    //   success:function(data){
-    //     console.log('succ');
-    //     console.log(data);
-    //   },
-    //   error:function(data){
-    //     console.log(data);
-    //   },
-    // });
-    // layer.open({
-    //   type: 2,
-    //   content: ['test.html', 'no'],
-    //   success: function(layero, index){
-    //     var bodyDOM = layer.getChildFrame('#show_text', index);
-    //     console.log(bodyDOM);
-    //     bodyDOM[0].innerText='abcdefg';
-    //     bodyDOM[0].innerText=bodyDOM[0].innerText + '\nhijklmn';
-    //   }
-    // });
+    do_server_operation(server_checked, data.field.operation);
     return false;
   });
 
@@ -283,6 +318,9 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
         if(res[idx]['ip'] === null){
           button_xml += ' disabled';
         }
+        else{
+          start_interval_check(res[idx]['server_id']);
+        }
         button_xml += ' value="' + res[idx]['server_id'] + '"';
         button_xml += '></div></form></td>';
         $('#main').append(button_xml);
@@ -290,7 +328,7 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
         $('#main').append('<td>' + res[idx]['server_name'] + '</td>');
         $('#main').append('<td>' + res[idx]['server_id'] + '</td>');
         $('#main').append('<td>' + res[idx]['ip'] + '</td>');
-        $('#main').append('<td id=state' + res[idx]['server_id'] + '>' + '宕机' + '</td>');
+        $('#main').append('<td id=state' + res[idx]['server_id'] + '>' + '检测中' + '</td>');
         $('#main').append('</tr>');
         server_data[res[idx]['server_id']] = res[idx];
       }
