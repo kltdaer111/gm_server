@@ -213,44 +213,189 @@ body{overflow-y: scroll;}
 <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   -->
 
 <script>
-var server_status = {};
-var server_timer = {};
+//需要检测状态的server_id
+var effect_server_id = [];
+//最近一次的服务器行为
+var last_server_action = {};
+//服务器状态
+var all_server_states = {};
+//选中的服务器
+var server_checked = {};
+
 var CHECK_INTERVAL = 5000;  //ms
 var LOCAL_SERVER = ['db_server', 'log_server', 'gm_server', 'game_server', 'center_server', 'chat_server', 'gate_server', 'login_server'];
 var GLOBAL_SERVER = ['account_server', 'glog_server', 'area_server', 'transfer_server', 'cross_server'];
 var NOT_WORKING_DESCRIPTION = 'has been stop';
-var WORING_DESCRIPTION = 'is running';
-var 
-function check_server_state(server_id){
-  send_msg_to_server(3, server_id, function(res){
-    console.log('server_id:' + server_id);
-    console.log(res);
+var WORKING_DESCRIPTION = 'is running';
+var SERVER_STATE = {
+  UNKNOWN : '未知',
+  RUNNING : '运行中',
+  CLOSED : '关闭',
+};
 
+var SHOW_STATE = {
+  CLOSED : '关闭',
+  SHUTTING : '关闭中',
+  RUNNING : '开启',
+  STARTING : '开启中',
+  RESTART_SHUTTING : '重启:关闭中',
+  RESTART_STARTING : '重启:开启中',
+  RESTART_CLOSED : '重启:已关闭',
+  DOWN : '宕机',
+  CANTBECLOSED : '无法关闭',
+  ABNORMAL : '异常',
+  NO_DATA : '检测中',
+};
+
+var ACTION = {
+  SHUT_BEGIN : 1,
+  SHUT_END : 2,
+  START_BEGIN : 3,
+  START_END : 4,
+  RESTART_SHUT_BEGIN : 5,
+  RESTART_SHUT_END : 6,
+  RESTART_START_BEGIN : 7,
+  RESTART_START_END : 8,
+};
+
+function match_whole_word(src_str, search_str, ignore_front, ignore_back){
+  var idx = src_str.indexOf(search_str);
+  if(idx == -1){
+    return -1;
+  }
+  if(ignore_front && ignore_back){
+    return idx;
+  }
+  var not_match = false;
+  var last_idx = idx;
+  var now_idx = idx;
+  do{
+    if(now_idx == -1){
+      return -1;
+    }
+    if(!ignore_front){
+      if(now_idx > 0){
+        var letter = src_str[now_idx - 1];
+        if(letter.search(/[a-zA-Z0-9]/) == 0){
+          not_match = true;
+        }
+      }
+    }
+    if(!not_match && !ignore_back){
+      //TODO
+    }
+    last_idx = now_idx;
+    now_idx = src_str.indexOf(search_str, now_idx);
+  }while(not_match)
+  return last_idx;
+}
+
+function timer_function(){
+  for(idx in effect_server_id){
+    get_new_state_and_refresh_display(effect_server_id[idx]);
+  }
+}
+
+function get_new_state_and_refresh_display(server_id){
+  gen_server_states(server_id, refresh_server_display);
+}
+
+function refresh_server_display(server_id){
+  var new_state = get_display_state(server_id);
+  console.log(new_state);
+  $('#state' + server_id).text(new_state);
+  renderForm();
+}
+
+function gen_server_states(server_id, callback){
+  send_msg_to_server(3, server_id, function(res){
+    // console.log('server_id:' + server_id);
+    // console.log(res);
+    var server_states = {};
+    for(idx in LOCAL_SERVER){
+      var server_name = LOCAL_SERVER[idx];
+      var offset = res.search(server_name);
+      if(offset == -1){
+        server_states[server_name] = SERVER_STATE.UNKNOWN;
+        continue;
+      }
+      var linefeed_offset = res.indexOf('\n', offset);
+      var slice_str = res.slice(offset, linefeed_offset);
+      if(slice_str.indexOf(WORKING_DESCRIPTION) != -1){
+        server_states[server_name] = SERVER_STATE.RUNNING;
+      }
+      else if(slice_str.indexOf(NOT_WORKING_DESCRIPTION) != -1){
+        server_states[server_name] = SERVER_STATE.CLOSED;
+      }
+    }
+    all_server_states[server_id] = server_states;
+    if(callback !== undefined)
+      callback(server_id);
   });
 }
 
-function start_interval_check(server_id){
-  var timer_id = setInterval(function(){check_server_state(server_id)}, CHECK_INTERVAL);
-  server_timer[server_id] = timer_id;
+function refresh_last_server_action(server_id){
+
+}
+
+/*
+ * @return SHOW_STATE
+ */
+function get_display_state(server_id){
+  var action = Number(last_server_action[server_id]);
+  switch(action){
+    case ACTION.START_BEGIN:
+      return SHOW_STATE.STARTING;
+    case ACTION.SHUT_BEGIN:
+      return SHOW_STATE.SHUTTING;
+    case ACTION.RESTART_SHUT_BEGIN:
+      return SHOW_STATE.RESTART_SHUTTING;
+    case ACTION.RESTART_START_BEGIN:
+      return SHOW_STATE.RESTART_STARTING;
+    case ACTION.START_END:
+    case ACTION.RESTART_START_END:
+      {
+        var server_states = all_server_states[server_id];
+        for(server_name in server_states){
+          if(server_states[server_name] != SERVER_STATE.RUNNING){
+            return SHOW_STATE.DOWN;
+          }
+        }
+        return SHOW_STATE.RUNNING;
+      }
+      break;
+    case ACTION.SHUT_END:
+    case ACTION.RESTART_SHUT_END:
+      {
+        var server_states = all_server_states[server_id];
+        for(server_name in server_states){
+          if(server_states[server_name] != SERVER_STATE.CLOSED){
+            return SHOW_STATE.CANTBECLOSED;
+          }
+        }
+        return SHOW_STATE.CLOSED;
+      }
+      break;
+    default:
+      return SHOW_STATE.NO_DATA;
+  }
+}
+
+function start_interval_check(){
+  var timer_id = setInterval(timer_function, CHECK_INTERVAL);
+  timer_function();
 }
 
 function stop_interval_check(server_id){
-  var timer_id = server_timer[server_id];
-  clearInterval(timer_id);
+  clearInterval();
 }
 
+/*
+* 执行操作：开启、关闭、重启服务器
+*
+*
+*/
 function do_server_operation(m_server_checked, oper){
-  for(idx in m_server_checked){
-    switch(oper){
-    case 'server-start':
-      $('#state' + idx).text('开启中');
-      break;
-    case 'server-shut':
-      $('#state' + idx).text('关闭中');
-      break;
-    }
-  }
-  renderForm();
   var send_data = {
       'oper' : oper,
       'server' : m_server_checked
@@ -258,20 +403,35 @@ function do_server_operation(m_server_checked, oper){
   send_msg_to_server(2, send_data, function(resdata){
       console.log('exec');
       console.log(resdata);
-      for(idx in resdata){
-        if(resdata[idx].indexOf('错误') == -1 && resdata[idx].indexOf('error') == -1 && resdata[idx].indexOf('fail') == -1){
-          switch(oper){
+      for(idx in m_server_checked){
+        switch(oper){
           case 'server-start':
-            $('#state' + idx).text('开启');
-            break;
+            last_server_action[idx] = ACTION.START_END;
+          break;
           case 'server-shut':
-            $('#state' + idx).text('关闭');
-            break;
-          }
+            last_server_action[idx] = ACTION.SHUT_END;
+          break;
+          case 'server-restart':
+            last_server_action[idx] = ACTION.RESTART_SHUT_END;
+          break;
         }
-        renderForm();
       }
   });
+  //立即更新状态
+  for(idx in m_server_checked){
+    switch(oper){
+      case 'server-start':
+        last_server_action[idx] = ACTION.START_BEGIN;
+      break;
+      case 'server-shut':
+        last_server_action[idx] = ACTION.SHUT_BEGIN;
+      break;
+      case 'server-restart':
+        last_server_action[idx] = ACTION.RESTART_SHUT_BEGIN;
+      break;
+    }
+    refresh_server_display(idx);
+  }
 }
 
 layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
@@ -293,11 +453,10 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
   });
 
   //监听【筛选】按钮
-  var server_data  = {};
-  var server_checked = {};
   form.on('submit(filter)', function(data){
     console.log(data);
     console.log(server_group_data);
+    stop_interval_check();
     var group_name = data.field.choose_server;
     var start_id = server_group_data[group_name]['group_start_id'];
     var end_id = server_group_data[group_name]['group_end_id'];
@@ -307,8 +466,6 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
     };
     send_msg_to_server(1, send_data, function(res){
       console.log(res);
-      server_data = {};
-      server_checked = {};
       $('#main').empty();
       for(idx in res){
         var tr_xml = '<tr id=' + res[idx]['server_id'] + '>';
@@ -319,7 +476,9 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
           button_xml += ' disabled';
         }
         else{
-          start_interval_check(res[idx]['server_id']);
+          effect_server_id.push(res[idx]['server_id']);
+          console.log(res[idx]['last_server_action']);
+          last_server_action[res[idx]['server_id']] = res[idx]['last_server_action'];
         }
         button_xml += ' value="' + res[idx]['server_id'] + '"';
         button_xml += '></div></form></td>';
@@ -330,9 +489,9 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
         $('#main').append('<td>' + res[idx]['ip'] + '</td>');
         $('#main').append('<td id=state' + res[idx]['server_id'] + '>' + '检测中' + '</td>');
         $('#main').append('</tr>');
-        server_data[res[idx]['server_id']] = res[idx];
       }
       renderForm();
+      start_interval_check();
     });
     return false;
   });
@@ -344,7 +503,7 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
       server_checked[data.value] = 1;
     }
     else{
-      server_checked[data.value] = 0;
+      delete server_checked[data.value];
     }
   
   });

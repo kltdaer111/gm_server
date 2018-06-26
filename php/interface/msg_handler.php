@@ -20,6 +20,11 @@ function get_ssh_need_info($db_con, $server_id){
 	return $data;
 }
 
+function update_last_server_action($db_con, $server_id, $action_id){
+	$sql = "UPDATE server_action SET last_server_action={$action_id} WHERE server_id={$server_id};";
+	$db_con->query($sql);
+}
+
 switch($msg_id){
 	case 1:
 	{
@@ -27,7 +32,7 @@ switch($msg_id){
 		if($db_con->connect_errno){
 			throw new Exception("NO DB CONNECTION " . $db_con->connect_error);
 		}
-		$sql = "SELECT gm_server_list.server_id,server_name,server_ssh.ip,username,location FROM gm_server_list LEFT OUTER JOIN server_ssh ON gm_server_list.server_id=server_ssh.server_id WHERE gm_server_list.server_id >= {$msg_data['start_id']} AND gm_server_list.server_id <= {$msg_data['end_id']};";
+		$sql = "SELECT gm_server_list.server_id,server_name,server_ssh.ip,username,location,last_server_action FROM gm_server_list LEFT OUTER JOIN server_ssh ON gm_server_list.server_id=server_ssh.server_id LEFT OUTER JOIN server_action ON gm_server_list.server_id=server_action.server_id WHERE gm_server_list.server_id >= {$msg_data['start_id']} AND gm_server_list.server_id <= {$msg_data['end_id']};";
 		$result = $db_con->query($sql);
 		$result_array = array();
 		while($array_data = mysqli_fetch_array($result, MYSQLI_ASSOC)){
@@ -53,16 +58,23 @@ switch($msg_id){
 				$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
 				switch($msg_data['oper']){
 					case 'server-start':
+						update_last_server_action($db_con, $server_id, 3);
 						$cmd = 'sh ' . $location . '/run.sh -y';
 						$result_string = $ssh2_obj->sync_operation($cmd);
 						log_debug($result_string);
 						$res[$server_id] = $result_string;
+						update_last_server_action($db_con, $server_id, 4);
 						break;
 					case 'server-shut':
+						update_last_server_action($db_con, $server_id, 1);
 						$cmd = 'sh ' . $location . '/stop.sh -y';
 						$result_string = $ssh2_obj->sync_operation($cmd);
 						log_debug($result_string);
 						$res[$server_id] = $result_string;
+						update_last_server_action($db_con, $server_id, 2);
+						break;
+					case 'server-restart':
+
 						break;
 				}
 			}
@@ -85,6 +97,11 @@ switch($msg_id){
 		$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
 		$cmd = 'sh ' . $location . '/check.sh';
 		echo json_encode($ssh2_obj->sync_operation($cmd));
+	}
+	break;
+	case 4:
+	{
+		echo json_encode(1);
 	}
 	break;
 	default:
