@@ -106,6 +106,13 @@ switch($msg_id){
 	break;
 	case 5:
 	{
+		// {
+		// 	server_group : data.field.oper_choose_server_group,
+		// 	server_id : data.field.oper_choose_server,
+		// 	query_type : data.field.query_choice,
+		// 	start_date : period_select['start'],
+		// 	end_date : period_select['end'],
+		// }
 		
 	}
 	break;
