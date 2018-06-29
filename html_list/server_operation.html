@@ -167,10 +167,10 @@ body{overflow-y: scroll;}
         
 
           <div class="layui-row">
-            <div class="layui-col-lg1 layui-col-md-offset3">
+            <div class="layui-col-lg1 layui-col-md-offset2">
                   <label class="layui-form-label">日期范围</label>
               </div>
-            <div class="layui-col-lg2">
+            <div class="layui-col-lg3">
               <input type="text" class="layui-input" id="date">
             </div>
             
@@ -341,8 +341,8 @@ function refresh_server_display(server_id){
 
 function gen_server_states(server_id, callback){
   send_msg_to_server(3, server_id, function(res){
-    console.log(typeof(res));
-    console.log(res);
+    // console.log(typeof(res));
+    // console.log(res);
     res = filter_color_char(res);
     console.log(res);
     var server_states = {};
@@ -482,9 +482,9 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
     done: function(value, date, endDate){
       period_select['start'] = date;
       period_select['end'] = endDate;
-      console.log(value); //得到日期生成的值，如：2017-08-18
-      console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
-      console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
+      // console.log(value); //得到日期生成的值，如：2017-08-18
+      // console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
+      // console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
     },
   });
 
