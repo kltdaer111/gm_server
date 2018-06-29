@@ -148,37 +148,39 @@ body{overflow-y: scroll;}
               <input type="radio" name="query_choice" value="group" title="服务器组">
             </div>
             <div class="layui-col-lg3">
-              <select name="choose_server" lay-verify="required">
+              <select name="oper_choose_server_group" id='operation_group' lay-filter='operation_group'>
                 <option value="">请选择服务器组</option>
-                <option value="0">美国</option>
               </select>
             </div>
             <div class="layui-col-lg1  layui-col-md-offset1">
               <input type="radio" name="query_choice" value="single" title="服务器名称">
             </div>
             <div class="layui-col-lg3">
-              <select name="choose_server" lay-verify="required">
+              <select name="oper_choose_server" id='operation_server'>
                 <option value="">请选择服务器</option>
-                <option value="0">开天辟地</option>
               </select>
             </div>
           </div>
 
           <div class="layui-row">
           </div>
-        </form>
+        
 
-        <div class="layui-row">
-          <div class="layui-col-lg1 layui-col-md-offset3">
-                <label class="layui-form-label">日期范围</label>
+          <div class="layui-row">
+            <div class="layui-col-lg1 layui-col-md-offset3">
+                  <label class="layui-form-label">日期范围</label>
+              </div>
+            <div class="layui-col-lg2">
+              <input type="text" class="layui-input" id="date">
             </div>
-          <div class="layui-col-lg2">
-            <input type="text" class="layui-input" id="date">
+            
+            <div class="layui-col-lg1 layui-col-md-offset2">
+              <div class="layui-form-item">
+              <button class="layui-btn" lay-submit id='query' lay-filter='query'>查询</button> 
+              </div>
+            </div> 
           </div>
-          <div class="layui-col-lg1 layui-col-md-offset2">
-            <button class="layui-btn">查询</button> 
-          </div> 
-        </div>
+        </form>
         <table class="layui-table">
         <colgroup>
           <col width="150">
@@ -221,11 +223,15 @@ var last_server_action = {};
 var all_server_states = {};
 //选中的服务器
 var server_checked = {};
+//服务器组数据
+var server_group_data = {};
+//当前选择的时间范围
+var period_select = {};
 
 var CHECK_INTERVAL = 5000;  //ms
-var LOCAL_SERVER = ['db_server', 'log_server', 'gm_server', 'game_server', 'center_server', 'chat_server', 'gate_server', 'login_server'];
+var LOCAL_SERVER = ['db_server', 'gm_server', 'log_server', 'game_server', 'center_server', 'chat_server', 'gate_server', 'login_server'];
 var GLOBAL_SERVER = ['account_server', 'glog_server', 'area_server', 'transfer_server', 'cross_server'];
-var NOT_WORKING_DESCRIPTION = 'has been stop';
+var NOT_WORKING_DESCRIPTION = 'has been stopped';
 var WORKING_DESCRIPTION = 'is running';
 var SERVER_STATE = {
   UNKNOWN : '未知',
@@ -258,37 +264,62 @@ var ACTION = {
   RESTART_START_END : 8,
 };
 
-function match_whole_word(src_str, search_str, ignore_front, ignore_back){
-  var idx = src_str.indexOf(search_str);
-  if(idx == -1){
-    return -1;
-  }
-  if(ignore_front && ignore_back){
-    return idx;
-  }
-  var not_match = false;
-  var last_idx = idx;
-  var now_idx = idx;
-  do{
-    if(now_idx == -1){
-      return -1;
-    }
-    if(!ignore_front){
-      if(now_idx > 0){
-        var letter = src_str[now_idx - 1];
-        if(letter.search(/[a-zA-Z0-9]/) == 0){
-          not_match = true;
+function match_whole_word(src_str, search_str, begin_index = 0, ignore_front = false, ignore_back = false){                            
+    var not_match = true, not_match_front = true, not_match_back = true;                                                               
+    var now_idx = begin_index, next_search_idx = begin_index;                                                                          
+    do{
+        now_idx = src_str.indexOf(search_str, next_search_idx);
+        if(now_idx == -1){
+            break;
         }
-      }
-    }
-    if(!not_match && !ignore_back){
-      //TODO
-    }
-    last_idx = now_idx;
-    now_idx = src_str.indexOf(search_str, now_idx);
-  }while(not_match)
-  return last_idx;
+        next_search_idx = now_idx + 1;
+        if(!ignore_front){
+            if(now_idx == 0){
+                not_match_front = false;
+            }
+            else if(now_idx > 0){
+                var letter = src_str[now_idx - 1];
+                if(letter.search(/[a-zA-Z0-9]/) == -1){
+                    not_match_front = false;
+                }
+            }
+        }
+        else{
+            not_match_front = false;
+        }
+        if(!ignore_back){
+            var end_idx = now_idx + search_str.length;
+            if(end_idx >= src_str.length){
+                not_match_back = false;
+            }
+            else{
+                var letter = src_str[end_idx];
+                if(letter.search(/[a-zA-Z0-9]/) == -1){
+                    not_match_back = false;
+                }
+            }
+        }
+        else{
+            not_match_back = false;
+        }
+        if(!not_match_back && !not_match_front){
+            not_match = false;
+        }
+        //console.log(now_idx, next_search_idx);
+    }while(not_match)
+    return now_idx;
 }
+ 
+function reset_select_from_of_operation_server(){
+  $('#operation_server').empty();
+  $('#operation_server').append('<option value="">请选择服务器</option>');
+}
+
+//过滤颜色字符
+function filter_color_char(str){
+  return str.replace(/\033\S*?m/g, '');
+}
+
 
 function timer_function(){
   for(idx in effect_server_id){
@@ -302,19 +333,23 @@ function get_new_state_and_refresh_display(server_id){
 
 function refresh_server_display(server_id){
   var new_state = get_display_state(server_id);
-  console.log(new_state);
+  console.log(all_server_states[server_id]);
+  console.log(server_id + ':' + new_state);
   $('#state' + server_id).text(new_state);
   renderForm();
 }
 
 function gen_server_states(server_id, callback){
   send_msg_to_server(3, server_id, function(res){
-    // console.log('server_id:' + server_id);
-    // console.log(res);
+    console.log(typeof(res));
+    console.log(res);
+    res = filter_color_char(res);
+    console.log(res);
     var server_states = {};
     for(idx in LOCAL_SERVER){
       var server_name = LOCAL_SERVER[idx];
-      var offset = res.search(server_name);
+      //var offset = res.search(server_name);
+      var offset = match_whole_word(res, server_name, 0, false, true);
       if(offset == -1){
         server_states[server_name] = SERVER_STATE.UNKNOWN;
         continue;
@@ -441,7 +476,15 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
   //执行一个laydate实例
   laydate.render({
     elem: '#date',
-    range: '~'
+    type: 'datetime',
+    range: '~',
+    change: function(value, date, endDate){
+      period_select['start'] = date;
+      period_select['end'] = endDate;
+      // console.log(value); //得到日期生成的值，如：2017-08-18
+      // console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
+      // console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
+    },
   });
 
   //监听【执行】按钮
@@ -496,6 +539,21 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
     return false;
   });
 
+  //监听【查询】按钮
+  form.on('submit(query)', function(data){
+    console.log('query');
+    console.log(data);
+    var send_data = {
+      server_group : data.field.oper_choose_server_group,
+      server_id : data.field.oper_choose_server,
+      query_type : data.field.query_choice,
+    }
+    send_msg_to_server(5, send_data, function(res){
+      console.log(res);
+    });
+    return false;
+  });
+
   //监听checkbox
   form.on('checkbox()', function(data){
     console.log(data);
@@ -505,12 +563,31 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
     else{
       delete server_checked[data.value];
     }
-  
+  });
+
+  //监听select事件
+  form.on('select(operation_group)', function(data){
+    console.log(data);
+    var start_id = server_group_data[data.value]['group_start_id'];
+    var end_id = server_group_data[data.value]['group_end_id'];
+    var send_data = {
+      'start_id' : start_id,
+      'end_id' : end_id
+    };
+    send_msg_to_server(1, send_data, function(res){
+      console.log(res);
+      reset_select_from_of_operation_server();
+      for(idx in res){
+        if(res[idx]['ip'] !== null){
+          $('#operation_server').append("<option value='" + res[idx]['server_id'] + "'>"+res[idx]['server_name']+"</option>");
+        }
+      }
+      renderForm();
+    });
   });
 });
 
 //页面预加载
-var server_group_data = {};
 $(document).ready(function(){
   var data = [{
     'table_name':'server_group',
@@ -519,18 +596,13 @@ $(document).ready(function(){
     console.log(res);
     for(idx in res){
       $('#group').append("<option value='" + res[idx]['group_name'] + "'>"+res[idx]['group_name']+"</option>");
+      $('#operation_group').append("<option value='" + res[idx]['group_name'] + "'>"+res[idx]['group_name']+"</option>");
       server_group_data[res[idx]['group_name']] = res[idx];
     }
     renderForm();
   });
 
-  get_server_list_with_callback(function(list){
-    for(var i = 0; i < list.length; i++)
-    {
-      $("#idchoose").append("<option value='"+list[i].id+"'>"+list[i].name+"</option>");
-    }
-    renderForm();
-  });
+
 });
 </script>
 

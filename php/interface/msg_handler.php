@@ -8,7 +8,7 @@ $msg_id = $_POST['msg_id'];
 $msg_data = json_decode($_POST['msg_data'], true);
 
 function get_ssh_need_info($db_con, $server_id){
-	$sql = "SELECT gm_server_list.server_id,server_ssh.ip,ssh_port,username,passwd,location FROM gm_server_list LEFT OUTER JOIN server_ssh ON gm_server_list.server_id=server_ssh.server_id LEFT OUTER JOIN ssh_user ON server_ssh.ip=ssh_user.ip AND username=user WHERE gm_server_list.server_id={$server_id}";
+	$sql = "SELECT gm_server_list.server_id,server_name,server_ssh.ip,ssh_port,username,passwd,location FROM gm_server_list LEFT OUTER JOIN server_ssh ON gm_server_list.server_id=server_ssh.server_id LEFT OUTER JOIN ssh_user ON server_ssh.ip=ssh_user.ip AND username=user WHERE gm_server_list.server_id={$server_id}";
 	$result = $db_con->query($sql);
 	if($result == false){
 		throw new Exception("QUERY FAILED:" . $sql . $this->m_db_con->error);
@@ -96,12 +96,17 @@ switch($msg_id){
 		log_debug(print_r($data, true));
 		$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
 		$cmd = 'sh ' . $location . '/check.sh';
-		echo json_encode($ssh2_obj->sync_operation($cmd));
+		echo json_encode($ssh2_obj->sync_operation($cmd) . $msg_data);
 	}
 	break;
 	case 4:
 	{
 		echo json_encode(1);
+	}
+	break;
+	case 5:
+	{
+		
 	}
 	break;
 	default:
