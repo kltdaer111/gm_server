@@ -12,7 +12,7 @@
 		$conn = get_connect("sg_gm");
 		$ret_data=array();
 		foreach( $data->sid as $sid ){
-			  $sql = "SELECT  *  FROM `send_notice` where `server_id` = '$sid'";
+			  $sql = "SELECT  *  FROM `send_notice_log` where `server_id` = '$sid'";
 		      if(property_exists($data,"notice_type"))
 		      {
 		        $sql .= "and notice_type = '$data->notice_type'";

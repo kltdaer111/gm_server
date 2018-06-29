@@ -12,7 +12,7 @@
 		$conn = get_connect("sg_gm");
 		$ret_data=array();
 		foreach( $data->sid as $sid ){
-			  $sql = "SELECT  *  FROM `send_mail` where `server_id` = '$sid'";
+			  $sql = "SELECT  *  FROM `send_mail_log` where `server_id` = '$sid'";
 		      if(property_exists($data,"id"))
 		      {
 		        $sql .= "and id = '$data->id'";

@@ -35,7 +35,7 @@
 			$ret=$client->send($tm_send_notice_request, $data_info);
 			$ret_data[$sid]=$ret;
       if ($ret == 0){
-        $sql = "insert into `send_notice` set notice_type = '$data->type', tick = '$data->tick',start_time = '$data->start_time',end_time = '$data->end_time',notice = '$data->notice',oper_time = '$data->oper_time',server_id = '$sid',oper_name = '$data->oper_name'";
+        $sql = "insert into `send_notice_log` set notice_type = '$data->type', tick = '$data->tick',start_time = '$data->start_time',end_time = '$data->end_time',notice = '$data->notice',oper_time = '$data->oper_time',server_id = '$sid',oper_name = '$data->oper_name'";
         
         $conn->query($sql);
 			}

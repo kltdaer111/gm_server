@@ -89,13 +89,13 @@ body{overflow-y: scroll;}
         <div class="layui-row">
       
           <div class="layui-col-lg3 layui-col-md-offset1">
-            <input type="radio" name="operation" value="server-start" title="开启服务器">
+            <input type="radio" name="operation" value='1' title='开启服务器'>
           </div>
           <div class="layui-col-lg3">
-            <input type="radio" name="operation" value="server-shut" title="关闭服务器">
+            <input type="radio" name="operation" value='2' title="关闭服务器">
           </div>
           <div class="layui-col-lg3">
-            <input type="radio" name="operation" value="server-restart" title="重启服务器">
+            <input type="radio" name="operation" value='3' title="重启服务器">
           </div>
         
           <div class="layui-col-lg1 layui-col-md-offset1">
@@ -196,14 +196,7 @@ body{overflow-y: scroll;}
             <th>操作时间</th>
           </tr> 
         </thead>
-        <tbody>
-          <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
+        <tbody id='log-table'>
         </tbody>
       </table>
 
@@ -233,6 +226,13 @@ var LOCAL_SERVER = ['db_server', 'gm_server', 'log_server', 'game_server', 'cent
 var GLOBAL_SERVER = ['account_server', 'glog_server', 'area_server', 'transfer_server', 'cross_server'];
 var NOT_WORKING_DESCRIPTION = 'has been stopped';
 var WORKING_DESCRIPTION = 'is running';
+
+var OPERATION_TYPE = {
+  1 : '开启服务器',
+  2 : '关闭服务器',
+  3 : '重启服务器',
+}
+
 var SERVER_STATE = {
   UNKNOWN : '未知',
   RUNNING : '运行中',
@@ -433,20 +433,21 @@ function stop_interval_check(server_id){
 function do_server_operation(m_server_checked, oper){
   var send_data = {
       'oper' : oper,
-      'server' : m_server_checked
+      'server' : m_server_checked,
+      'user' : 'admin',
     };
   send_msg_to_server(2, send_data, function(resdata){
       console.log('exec');
       console.log(resdata);
       for(idx in m_server_checked){
         switch(oper){
-          case 'server-start':
+          case '1':
             last_server_action[idx] = ACTION.START_END;
           break;
-          case 'server-shut':
+          case '2':
             last_server_action[idx] = ACTION.SHUT_END;
           break;
-          case 'server-restart':
+          case '3':
             last_server_action[idx] = ACTION.RESTART_SHUT_END;
           break;
         }
@@ -455,13 +456,13 @@ function do_server_operation(m_server_checked, oper){
   //立即更新状态
   for(idx in m_server_checked){
     switch(oper){
-      case 'server-start':
+      case '1':
         last_server_action[idx] = ACTION.START_BEGIN;
       break;
-      case 'server-shut':
+      case '2':
         last_server_action[idx] = ACTION.SHUT_BEGIN;
       break;
-      case 'server-restart':
+      case '3':
         last_server_action[idx] = ACTION.RESTART_SHUT_BEGIN;
       break;
     }
@@ -478,12 +479,12 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
     elem: '#date',
     type: 'datetime',
     range: '~',
-    change: function(value, date, endDate){
+    done: function(value, date, endDate){
       period_select['start'] = date;
       period_select['end'] = endDate;
-      // console.log(value); //得到日期生成的值，如：2017-08-18
-      // console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
-      // console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
+      console.log(value); //得到日期生成的值，如：2017-08-18
+      console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
+      console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
     },
   });
 
@@ -541,17 +542,36 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
 
   //监听【查询】按钮
   form.on('submit(query)', function(data){
+    var date = $('#date').val();
+    console.log(date);
     console.log('query');
     console.log(data);
     var send_data = {
       server_group : data.field.oper_choose_server_group,
+      server_group_data : server_group_data,
       server_id : data.field.oper_choose_server,
       query_type : data.field.query_choice,
       start_date : period_select['start'],
       end_date : period_select['end'],
+      date : date,
     }
-    send_msg_to_server(5, send_data, function(res){
-      console.log(res);
+    console.log(send_data);
+    send_msg_to_server(5, send_data, function(result){
+      console.log(result);
+      var res = result['data'];
+      var group_name = result['group'];
+      $('#log-table').empty();
+      for(idx in res){
+        var tr_xml = '<tr id=' + res[idx]['server_id'] + '>';
+        $('#log-table').append(tr_xml);
+        $('#log-table').append('<td>' + group_name + '</td>');
+        $('#log-table').append('<td>' + res[idx]['server_name'] + '</td>');
+        $('#log-table').append('<td>' + OPERATION_TYPE[res[idx]['operation_type']] + '</td>');
+        $('#log-table').append('<td>' + res[idx]['operation_user'] + '</td>');
+        $('#log-table').append('<td>' + res[idx]['operation_date'] + '</td>');
+        $('#log-table').append('</tr>');
+      }
+      renderForm();
     });
     return false;
   });

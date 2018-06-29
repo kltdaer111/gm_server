@@ -44,7 +44,7 @@
 			if ($ret == 0){
 				$ret_data[$sid]=0;
 		        $mail_data = $data->mail_data;
-		        $sql = "insert into `send_mail` set id = '$data->id', mail_type = '$mail_data->type',title = '$mail_data->title',content = '$mail_data->content',send_name = '$mail_data->send_name',send_time = '$mail_data->send_time',end_time = '$mail_data->end_time',on_time = '$mail_data->on_time',items = '$mail_data->items',limit_level = '$mail_data->limit_level',limit_cond = '$mail_data->limit_cond',server_id = '$sid',oper_time = '$data->oper_time',oper_name = '$data->oper_name'";
+		        $sql = "insert into `send_mail_log` set id = '$data->id', mail_type = '$mail_data->type',title = '$mail_data->title',content = '$mail_data->content',send_name = '$mail_data->send_name',send_time = '$mail_data->send_time',end_time = '$mail_data->end_time',on_time = '$mail_data->on_time',items = '$mail_data->items',limit_level = '$mail_data->limit_level',limit_cond = '$mail_data->limit_cond',server_id = '$sid',oper_time = '$data->oper_time',oper_name = '$data->oper_name'";
 		        $conn->query($sql);
 			}else{
 				$ret_data[$sid]=-1;
