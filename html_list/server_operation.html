@@ -547,6 +547,8 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
       server_group : data.field.oper_choose_server_group,
       server_id : data.field.oper_choose_server,
       query_type : data.field.query_choice,
+      start_date : period_select['start'],
+      end_date : period_select['end'],
     }
     send_msg_to_server(5, send_data, function(res){
       console.log(res);
