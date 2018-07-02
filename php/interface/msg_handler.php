@@ -159,6 +159,29 @@ switch($msg_id){
 		echo json_encode($res);
 	}
 	break;
+	case 6:
+	{
+		$db_con = get_connect('sg_gm');
+		if($db_con->connect_errno){
+			throw new Exception("NO DB CONNECTION " . $db_con->connect_error);
+		}
+		$sql = "SELECT server_id,server_name FROM gm_server_list;";
+		$result = $db_con->query($sql);
+		if($result == false){
+			throw new Exception("QUERY FAILED:" . $sql . $db_con->error);
+		}
+		$result_array = array();
+		while($array_data = mysqli_fetch_array($result, MYSQLI_ASSOC)){
+			array_push($result_array, $array_data);
+		}
+		echo json_encode($result_array);
+	}
+	break;
+	case 7:
+	{
+		$date = $msg_data['date'];
+		$sql = "SELECT role_uid,task_id FROM task_log WHERE op_type='702' AND UNIX_TIMESTAMP(create_time) >= UNIX_TIMESTAMP('{$date}') AND UNIX_TIMESTAMP(create_time) < UNIX_TIMESTAMP('{$date}') + 86400;";
+	}
 	default:
 		return;
 }
