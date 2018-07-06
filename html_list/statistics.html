@@ -121,7 +121,7 @@ body{overflow-y: scroll;}
               <th>留存率</th>
             </tr> 
           </thead>
-          <tbody id='table2'>
+          <tbody id='table3'>
           </tbody>
         </table>
       </div>
@@ -156,7 +156,65 @@ layui.use(['form', 'layedit','element','table', 'laydate', 'layer'], function(){
     };
     send_msg_to_server(7, send_data, function(res){
       console.log(res);
+      $('#table1').empty();
+      $('#table2').empty();
+      $('#table3').empty();
+      for(idx in res){
+        var obj = res[idx];
+        switch(obj.type){
+          case 'task':
+          {
+            var res_data = JSON.parse(obj.data);
+            console.log(res_data);
+            var length = res_data[0].length;
+            for(var i = 0; i < length; i++){
+              $('#table1').append('<tr>');
+              $('#table1').append('<td>' + res_data[0][i] + '</td>');
+              $('#table1').append('<td>' + res_data[1][i] + '</td>');
+              $('#table1').append('<td>' + res_data[2][i] + '</td>');
+              $('#table1').append('<td>' + res_data[3][i] + '</td>');
+              $('#table1').append('<td>' + res_data[4][i] + '</td>');
+              $('#table1').append('<td>' + res_data[5][i] + '</td>');
+              $('#table1').append('<td>' + res_data[6][i] + '</td>');
+            }
+          }
+          break;
+          case 'duration':
+          {
+            var res_data = JSON.parse(obj.data);
+            console.log(res_data);
+            var length = res_data[0].length;
+            for(var i = 0; i < length; i++){
+              $('#table2').append('<tr>');
+              $('#table2').append('<td>' + res_data[0][i] + '</td>');
+              $('#table2').append('<td>' + res_data[1][i] + '</td>');
+              $('#table2').append('<td>' + res_data[3][i] + '</td>');
+              $('#table2').append('<td>' + res_data[4][i] + '</td>');
+              $('#table2').append('<td>' + res_data[5][i] + '</td>');
+              $('#table2').append('<td>' + res_data[6][i] + '</td>');
+            }
+          }
+          break;
+          case 'level':
+          {
+            var res_data = JSON.parse(obj.data);
+            console.log(res_data);
+            var length = res_data[0].length;
+            for(var i = 0; i < length; i++){
+              $('#table3').append('<tr>');
+              $('#table3').append('<td>' + res_data[0][i] + '</td>');
+              $('#table3').append('<td>' + res_data[1][i] + '</td>');
+              $('#table3').append('<td>' + res_data[3][i] + '</td>');
+              $('#table3').append('<td>' + res_data[4][i] + '</td>');
+              $('#table3').append('<td>' + res_data[5][i] + '</td>');
+              $('#table3').append('<td>' + res_data[6][i] + '</td>');
+            }
+          }
+          break;
+        }
+      }
     });
+    renderForm();
     return false;
   });
 });

@@ -180,7 +180,20 @@ switch($msg_id){
 	case 7:
 	{
 		$date = $msg_data['date'];
-		$sql = "SELECT role_uid,task_id FROM task_log WHERE op_type='702' AND UNIX_TIMESTAMP(create_time) >= UNIX_TIMESTAMP('{$date}') AND UNIX_TIMESTAMP(create_time) < UNIX_TIMESTAMP('{$date}') + 86400;";
+		$db_con = get_connect('sg_log', 1);
+		if($db_con->connect_errno){
+			throw new Exception("NO DB CONNECTION " . $db_con->connect_error);
+		}
+		$sql = "SELECT * FROM daily_statistics_log WHERE date='{$date}'";
+		$result = $db_con->query($sql);
+		if($result == false){
+			throw new Exception("QUERY FAILED:" . $sql . $db_con->error);
+		}
+		$result_array = array();
+		while($array_data = mysqli_fetch_array($result, MYSQLI_ASSOC)){
+			array_push($result_array, $array_data);
+		}
+		echo json_encode($result_array);
 	}
 	default:
 		return;
