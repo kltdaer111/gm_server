@@ -68,8 +68,8 @@ switch($msg_id){
 					case 1:
 						update_last_server_action($db_con, $server_id, 3);
 						$cmd = 'sh ' . $location . '/run.sh -y';
+						log_debug($cmd);
 						$result_string = $ssh2_obj->sync_operation($cmd);
-						log_debug($result_string);
 						$res[$server_id] = $result_string;
 						update_last_server_action($db_con, $server_id, 4);
 						break;
@@ -77,12 +77,22 @@ switch($msg_id){
 						update_last_server_action($db_con, $server_id, 1);
 						$cmd = 'sh ' . $location . '/stop.sh -y';
 						$result_string = $ssh2_obj->sync_operation($cmd);
-						log_debug($result_string);
+						log_debug($cmd);
 						$res[$server_id] = $result_string;
 						update_last_server_action($db_con, $server_id, 2);
 						break;
 					case 3:
-
+						update_last_server_action($db_con, $server_id, 5);
+						$cmd = 'sh ' . $location . '/stop.sh -y';
+						log_debug($cmd);
+						$result_string = $ssh2_obj->sync_operation($cmd);
+						$res[$server_id]['stop'] = $result_string;
+						update_last_server_action($db_con, $server_id, 7);
+						$cmd = 'sh ' . $location . '/run.sh -y';
+						log_debug($cmd);
+						$result_string = $ssh2_obj->sync_operation($cmd);
+						$res[$server_id]['start'] = $result_string;
+						update_last_server_action($db_con, $server_id, 8);
 						break;
 				}
 			}
@@ -92,16 +102,16 @@ switch($msg_id){
 	break;
 	case 3:
 	{
-		log_debug($msg_data);
+		// log_debug($msg_data);
 		$db_con = get_connect('sg_gm');
 		$data = get_ssh_need_info($db_con, $msg_data);
-		log_debug(print_r($data, true));
+		// log_debug(print_r($data, true));
 		$ip = $data['ip'];
 		$port = $data['ssh_port'];
 		$user = $data['username'];
 		$passwd = $data['passwd'];
 		$location = $data['location'];
-		log_debug(print_r($data, true));
+		// log_debug(print_r($data, true));
 		$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
 		$cmd = 'sh ' . $location . '/check.sh';
 		echo json_encode($ssh2_obj->sync_operation($cmd) . $msg_data);
