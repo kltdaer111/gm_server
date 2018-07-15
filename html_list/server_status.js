@@ -146,9 +146,9 @@ ServerStatusSuit.prototype.generate_table = function () {
 }
 
 
-ServerStatusSuit.timer_function = function (self) {
-    for (idx in self.effect_server_id) {
-        self.get_new_state_and_refresh_display(self.effect_server_id[idx]);
+ServerStatusSuit.prototype.timer_function = function () {
+    for (idx in this.effect_server_id) {
+        this.get_new_state_and_refresh_display(this.effect_server_id[idx]);
     }
 }
 
@@ -249,8 +249,10 @@ ServerStatusSuit.prototype.start_interval_check = function () {
         return;
     }
     var self = this;
-    this.timer_id = setInterval('ServerStatusSuit.timer_function(self)', this.check_interval);
-    ServerStatusSuit.timer_function(self);
+    this.timer_id = setInterval(function(){
+        self.timer_function();
+    }, this.check_interval);
+    this.timer_function();
 }
 
 ServerStatusSuit.prototype.stop_interval_check = function (server_id) {
