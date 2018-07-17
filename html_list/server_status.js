@@ -1,9 +1,11 @@
-function ServerStatusSuit(dom_id, server_data, group_name, check_interval) {
+function ServerStatusSuit(dom_id, server_data, group_name, check_interval, layui) {
     this.dom_id = dom_id;
     this.server_data = server_data;
     this.group_name = group_name;
     //最近一次的服务器行为
     this.last_server_action = {};
+    //最近一次的服务器更新操作
+    this.last_server_update = {};
     //需要检测状态的server_id
     this.effect_server_id = [];
     //检测间隔
@@ -14,6 +16,7 @@ function ServerStatusSuit(dom_id, server_data, group_name, check_interval) {
     this.all_server_states = {};
     //选中的服务器
     this.server_checked = {};
+    this.layui = layui;
 }
 
 ServerStatusSuit.prototype.SERVER_STATE = {
@@ -34,6 +37,8 @@ ServerStatusSuit.prototype.SHOW_STATE = {
     CANTBECLOSED: '无法关闭',
     ABNORMAL: '异常',
     NO_DATA: '检测中',
+    UPDATING: '更新中',
+    UPDATE_FAILED: '更新失败',
 };
 
 ServerStatusSuit.prototype.ACTION = {
@@ -45,6 +50,12 @@ ServerStatusSuit.prototype.ACTION = {
     RESTART_SHUT_END: 6,
     RESTART_START_BEGIN: 7,
     RESTART_START_END: 8,
+};
+
+ServerStatusSuit.prototype.UPDATE = {
+    UPDATE_BEGIN: 1,
+    UPDATE_END: 2,
+    UPDATE_END_FAILED: 3,
 };
 
 ServerStatusSuit.prototype.LOCAL_SERVER = ['db_server', 'gm_server', 'log_server', 'game_server', 'center_server', 'chat_server', 'gate_server', 'login_server'];
@@ -124,7 +135,7 @@ ServerStatusSuit.prototype.generate_table = function () {
         var tr_xml = '<tr id=' + res[idx]['server_id'] + '>';
         $(main_label).append(tr_xml);
 
-        var button_xml = '<td><form class="layui-form" action=""><div class="layui-form-item"><input type="checkbox"';
+        var button_xml = '<td><form class="layui-form" action=""><div class="layui-form-item"><input type="checkbox" lay-filter="checkbox_filter_' + this.dom_id + '"';
         if (res[idx]['ip'] === null) {
             button_xml += ' disabled';
         }
@@ -142,6 +153,7 @@ ServerStatusSuit.prototype.generate_table = function () {
         $(main_label).append('<td id=' + this.dom_id + '_state_' + res[idx]['server_id'] + '>' + '检测中' + '</td>');
         $(main_label).append('</tr>');
     }
+    this.reg_checkbox_event();
     renderForm();
 }
 
@@ -158,10 +170,10 @@ ServerStatusSuit.prototype.get_new_state_and_refresh_display = function (server_
 
 ServerStatusSuit.prototype.refresh_server_display = function (server_id) {
     var new_state = this.get_display_state(server_id);
-    console.log(this.all_server_states[server_id]);
+    // console.log(this.all_server_states[server_id]);
     // console.log(server_id + ':' + new_state);
     var label = '#' + this.dom_id + '_state_' + server_id;
-    console.log(label);
+    // console.log(label);
     $(label).text(new_state);
     renderForm();
 }
@@ -206,6 +218,13 @@ ServerStatusSuit.prototype.refresh_last_server_action = function (server_id) {
  */
 ServerStatusSuit.prototype.get_display_state = function (server_id) {
     var action = Number(this.last_server_action[server_id]);
+    var update = Number(this.last_server_update[server_id]);
+    if (update == this.UPDATE.UPDATE_BEGIN) {
+        return this.SHOW_STATE.UPDATING;
+    }
+    if (update == this.UPDATE.UPDATE_END_FAILED) {
+        return this.SHOW_STATE.UPDATE_FAILED;
+    }
     switch (action) {
         case this.ACTION.START_BEGIN:
             return this.SHOW_STATE.STARTING;
@@ -249,7 +268,7 @@ ServerStatusSuit.prototype.start_interval_check = function () {
         return;
     }
     var self = this;
-    this.timer_id = setInterval(function(){
+    this.timer_id = setInterval(function () {
         self.timer_function();
     }, this.check_interval);
     this.timer_function();
@@ -260,50 +279,112 @@ ServerStatusSuit.prototype.stop_interval_check = function (server_id) {
     this.timer_id = 0;
 }
 
+ServerStatusSuit.prototype.reg_checkbox_event = function () {
+    //监听checkbox
+    var self = this;
+    var filter = 'checkbox(checkbox_filter_' + this.dom_id + ')';
+    this.layui.use(['form'], function () {
+        var form = self.layui.form;
+        form.on(filter, function (data) {
+            console.log(data);
+            if (data.elem.checked) {
+                self.server_checked[data.value] = 1;
+            }
+            else {
+                delete self.server_checked[data.value];
+            }
+        });
+    });
+}
 /*
 * 执行操作：开启、关闭、重启服务器
 *
 *
 */
-ServerStatusSuit.prototype.do_server_operation = function(oper) {
+ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
     var send_data = {
         'oper': oper,
         'server': this.server_checked,
         'user': 'admin',
     };
     console.log(send_data);
+    //立即更新状态
+    for (id in this.server_checked) {
+        switch (oper) {
+            case '开启服务器':
+                this.last_server_action[id] = this.ACTION.START_BEGIN;
+                break;
+            case '关闭服务器':
+                this.last_server_action[id] = this.ACTION.SHUT_BEGIN;
+                break;
+            case '重启服务器':
+                this.last_server_action[id] = this.ACTION.RESTART_SHUT_BEGIN;
+                break;
+            case '关服更新':
+                if (this.get_display_state(id) !== this.SHOW_STATE.CLOSED) {
+                    var r = confirm("你确定要关闭服务器并更新吗?");
+                    if (r != true) {
+                        return;
+                    }
+                }
+                if (data.field.tab_copy_choose_source == "") {
+                    alert('请选择拷贝源!');
+                    return;
+                }
+                send_data.para1 = data.field.tab_copy_choose_source;
+                if (data.field.tab_copy_choose_version == "") {
+                    alert('请选择版本!');
+                    return;
+                }
+                console.log('goon');
+                send_data.para2 = data.field.tab_copy_choose_version;
+                this.last_server_update[id] = this.UPDATE.UPDATE_BEGIN;
+                break;
+            case '不关服更新':
+                
+                if (data.field.tab_copy_choose_source == "") {
+                    alert('请选择拷贝源!');
+                    return;
+                }
+                send_data.para1 = data.field.tab_copy_choose_source;
+                if (data.field.tab_copy_choose_version == "") {
+                    alert('请选择版本!');
+                    return;
+                }
+                send_data.para2 = data.field.tab_copy_choose_version;
+                this.last_server_update[id] = this.UPDATE.UPDATE_BEGIN;
+                break;
+        }
+        this.refresh_server_display(id);
+    }
+    renderForm();
     var self = this;
     send_msg_to_server(2, send_data, function (resdata) {
         console.log('exec');
         console.log(resdata);
-        for (idx in self.server_checked) {
+        //TODO 检查是否成功
+        //TODO 最好改成实时更新
+        for (id in self.server_checked) {
             switch (oper) {
-                case '1':
-                    self.last_server_action[idx] = self.ACTION.START_END;
+                case '开启服务器':
+                    self.last_server_action[id] = self.ACTION.START_END;
                     break;
-                case '2':
-                    self.last_server_action[idx] = self.ACTION.SHUT_END;
+                case '关闭服务器':
+                    self.last_server_action[id] = self.ACTION.SHUT_END;
                     break;
-                case '3':
-                    self.last_server_action[idx] = self.ACTION.RESTART_START_END;
+                case '重启服务器':
+                    self.last_server_action[id] = self.ACTION.RESTART_START_END;
+                    break;
+                case '关服更新':
+                case '不关服更新':
+                    if (resdata[id]['copy'] != '') {
+                        self.last_server_update[id] = self.UPDATE.UPDATE_END_FAILED;
+                    }
+                    else {
+                        self.last_server_update[id] = self.UPDATE.UPDATE_END;
+                    }
                     break;
             }
         }
     });
-    //立即更新状态
-    for (idx in this.server_checked) {
-        switch (oper) {
-            case '1':
-                this.last_server_action[idx] = this.ACTION.START_BEGIN;
-                break;
-            case '2':
-                this.last_server_action[idx] = this.ACTION.SHUT_BEGIN;
-                break;
-            case '3':
-                this.last_server_action[idx] = this.ACTION.RESTART_SHUT_BEGIN;
-                break;
-        }
-        this.refresh_server_display(idx);
-    }
-    renderForm();
 }

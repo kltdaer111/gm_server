@@ -1,5 +1,7 @@
 <?php
 
+require_once("../sg_gm/lib/log_debug.php");
+
 class SSH2Obj
 {
     private $m_ip;
@@ -29,8 +31,13 @@ class SSH2Obj
 
     public function sync_operation($cmd){
         $stream = ssh2_exec($this->m_conn, $cmd);
+        log_debug($cmd);
         stream_set_blocking($stream, true);
         return stream_get_contents($stream);
+    }
+
+    public function async_operation($cmd){
+        $stream = ssh2_exec($this->m_conn, $cmd);
     }
 }
 

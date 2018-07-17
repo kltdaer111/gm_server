@@ -100,7 +100,7 @@
     </ul>
     <div class="layui-tab-content">
       <div class="layui-tab-item layui-show">
-        <!-- 分页数据 -->
+        <!-- 服务器操作 -->
         <div class="layui-fluid">
           <form class="layui-form" action="">
 
@@ -135,13 +135,13 @@
             <div class="layui-row">
 
               <div class="layui-col-lg3 layui-col-md-offset1">
-                <input type="radio" name="operation" value='1' title='开启服务器'>
+                <input type="radio" name="operation" value='开启服务器' title='开启服务器'>
               </div>
               <div class="layui-col-lg3">
-                <input type="radio" name="operation" value='2' title="关闭服务器">
+                <input type="radio" name="operation" value='关闭服务器' title="关闭服务器">
               </div>
               <div class="layui-col-lg3">
-                <input type="radio" name="operation" value='3' title="重启服务器">
+                <input type="radio" name="operation" value='重启服务器' title="重启服务器">
               </div>
 
               <div class="layui-col-lg1 layui-col-md-offset1">
@@ -158,7 +158,7 @@
           </table>
         </div>
       </div>
-      <div class="layui-tab-item">
+      <div class="layui-tab-item" id="tab_copylog">
         <div class="layui-fluid">
           <form class="layui-form" action="">
             <div class="layui-row">
@@ -241,7 +241,7 @@
               </div>
 
               <div class="layui-col-lg4">
-                <select name="tab_copy_choose_server" id='tab_copy_group'>
+                <select name="tab_copy_choose_source" id='tab_copy_choose_source' lay-filter='tab_copy_choose_source'>
                   <option value="">请选择服务器</option>
                 </select>
               </div>
@@ -264,43 +264,44 @@
             </div>
 
             <div class="layui-row">
+              <div class="layui-col-lg1">
+                <label class="layui-form-label">服务器组</label>
+              </div>
 
+              <div class="layui-col-lg4">
+                <select name="tab_copy_choose_group" id='tab_copy_choose_group'>
+                  <option value="">请选择服务器组</option>
+                </select>
+              </div>
+
+              <div class="layui-col-lg2 layui-col-md-offset1">
+                <button class="layui-btn" lay-submit lay-filter='tab_copy_filter'>查询服务器</button>
+              </div>
+            </div>
+
+            <div class="layui-row">
+              <div class="layui-input-block"></div>
+            </div>
+
+            <div class="layui-row">
               <div class="layui-col-lg3 layui-col-md-offset1">
-                <input type="radio" name="operation" value='1' title='开启服务器'>
+                <input type="radio" name="tab_copy_operation" value='关服更新' title='关服更新'>
               </div>
-              <div class="layui-col-lg3">
-                <input type="radio" name="operation" value='2' title="关闭服务器">
+              <div class="layui-col-lg1">
+                <input type="radio" name="tab_copy_operation" value='不关服更新' title="不关服更新">
               </div>
-              <div class="layui-col-lg3">
-                <input type="radio" name="operation" value='3' title="重启服务器">
-              </div>
-
               <div class="layui-col-lg1 layui-col-md-offset1">
-                <button class="layui-btn" lay-submit lay-filter='exec'>执行</button>
+                <button class="layui-btn" lay-submit lay-filter='tab_copy_exec'>执行</button>
               </div>
             </div>
           </form>
-          <table class="layui-table">
-            <colgroup>
+
+          <table class="layui-table" id='tab_copy_status'>
+            <!-- <colgroup>
               <col width="150">
               <col width="200">
               <col>
-            </colgroup>
-            <thead>
-              <tr>
-                <th>
-                  <button class="layui-btn">全选</button>
-                </th>
-                <th>服务器组</th>
-                <th>服务器名称</th>
-                <th>服务器ID</th>
-                <th>服务器IP</th>
-                <th>当前状态</th>
-              </tr>
-            </thead>
-            <tbody id='main'>
-
-            </tbody>
+            </colgroup> -->
           </table>
         </div>
       </div>
@@ -340,28 +341,12 @@
 
               <div class="layui-col-lg1 layui-col-md-offset2">
                 <div class="layui-form-item">
-                  <button class="layui-btn" lay-submit id='query' lay-filter='query'>查询</button>
+                  <button class="layui-btn" lay-submit id='tab_copylog_query' lay-filter='tab_copylog_query'>查询</button>
                 </div>
               </div>
             </div>
           </form>
-          <table class="layui-table">
-            <colgroup>
-              <col width="150">
-              <col width="200">
-              <col>
-            </colgroup>
-            <thead>
-              <tr>
-                <th>服务器组</th>
-                <th>服务器名称</th>
-                <th>操作类型</th>
-                <th>操作用户</th>
-                <th>操作时间</th>
-              </tr>
-            </thead>
-            <tbody id='log-table'>
-            </tbody>
+          <table class="layui-table" id='tab_copylog_table'>
           </table>
 
         </div>
@@ -373,9 +358,9 @@
   <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   -->
 
   <script>
-    
-    var sss_obj;
-    
+
+    var tab_oper_server_status, tab_copy_server_status;
+
     //服务器组数据
     var server_group_data = {};
     //当前选择的时间范围
@@ -420,16 +405,43 @@
 
       //监听【执行】按钮
       form.on('submit(exec)', function (data) {
-        sss_obj.do_server_operation(data.field.operation);
+        console.log(data);
+        tab_oper_server_status.do_server_operation(data.field.operation);
         return false;
       });
-
+      //监听【查询服务器】按钮
+      form.on('submit(tab_copy_filter)', function (data) {
+        console.log(data);
+        console.log(server_group_data);
+        if (tab_copy_server_status !== undefined) {
+          tab_copy_server_status.stop_interval_check();
+        }
+        var group_name = data.field.tab_copy_choose_group;
+        var start_id = server_group_data[group_name]['group_start_id'];
+        var end_id = server_group_data[group_name]['group_end_id'];
+        var send_data = {
+          'start_id': start_id,
+          'end_id': end_id
+        };
+        send_msg_to_server(1, send_data, function (res) {
+          console.log(res);
+          tab_copy_server_status = new ServerStatusSuit('tab_copy_status', res, group_name, 10000, layui);
+          tab_copy_server_status.generate_table();
+          tab_copy_server_status.start_interval_check();
+        });
+        return false;
+      });
+      //监听服务器拷贝【执行】按钮
+      form.on('submit(tab_copy_exec)', function (data) {
+        tab_copy_server_status.do_server_operation(data.field.tab_copy_operation, data);
+        return false;
+      });
       //监听【筛选】按钮
       form.on('submit(filter)', function (data) {
         console.log(data);
         console.log(server_group_data);
-        if(sss_obj !== undefined){
-          sss_obj.stop_interval_check();
+        if (tab_oper_server_status !== undefined) {
+          tab_oper_server_status.stop_interval_check();
         }
         var group_name = data.field.choose_server;
         var start_id = server_group_data[group_name]['group_start_id'];
@@ -440,13 +452,17 @@
         };
         send_msg_to_server(1, send_data, function (res) {
           console.log(res);
-          sss_obj = new ServerStatusSuit('tab_oper_status', res, group_name, 5000);
-          sss_obj.generate_table();
-          sss_obj.start_interval_check();
+          tab_oper_server_status = new ServerStatusSuit('tab_oper_status', res, group_name, 5000, layui);
+          tab_oper_server_status.generate_table();
+          tab_oper_server_status.start_interval_check();
         });
         return false;
       });
-
+      //监听拷贝记录【查询】按钮
+      form.on('submit(tab_copylog_query', function(data){
+        console.log(data);
+        return false;
+      });
       //监听【查询】按钮
       form.on('submit(query)', function (data) {
         var date = $('#date').val();
@@ -483,17 +499,6 @@
         return false;
       });
 
-      //监听checkbox
-      form.on('checkbox()', function (data) {
-        console.log(data);
-        if (data.elem.checked) {
-          sss_obj.server_checked[data.value] = 1;
-        }
-        else {
-          delete sss_obj.server_checked[data.value];
-        }
-      });
-
       //监听select事件
       form.on('select(operation_group)', function (data) {
         console.log(data);
@@ -514,6 +519,39 @@
           renderForm();
         });
       });
+
+      //监听tab_copy的select事件：选择拷贝源
+      form.on('select(tab_copy_choose_source)', function (data) {
+        console.log(data);
+        var label = '#tab_copy_choose_version';
+        $(label).empty();
+        switch (data.value) {
+          case "内网Branches":
+            $(label).append("<option value=''>请选择版本</option>");
+            send_data = {
+              user : 'branches',
+              ip : '192.168.1.5',
+              port : 22,
+              cmd : 'ls ~/sg_server/branches'
+            }
+            send_msg_to_server(8, send_data, function(res){
+              console.log(res);
+              var array = res.split('\n');
+              array.pop();
+              console.log(array);
+              for(idx in array){
+                var version = array[idx];
+                $(label).append("<option value='" + version + "'>" + version + "</option>");
+              }
+              renderForm();
+            });
+            break;
+          case "内网Trunk":
+            $(label).append("<option value='最新版'>最新版</option>");
+            renderForm();
+            break;
+        }
+      });
     });
 
     //页面预加载
@@ -521,17 +559,21 @@
       var data = [{
         'table_name': 'server_group',
       }];
+      //填充服务器组select栏数据
       get_need_info_and_callback_it('sg_gm', data, function (res) {
         console.log(res);
         for (idx in res) {
           $('#group').append("<option value='" + res[idx]['group_name'] + "'>" + res[idx]['group_name'] + "</option>");
           $('#operation_group').append("<option value='" + res[idx]['group_name'] + "'>" + res[idx]['group_name'] + "</option>");
+          $('#tab_copy_choose_group').append("<option value='" + res[idx]['group_name'] + "'>" + res[idx]['group_name'] + "</option>");
           server_group_data[res[idx]['group_name']] = res[idx];
         }
         renderForm();
       });
 
-
+      //填充tab_copy页的拷贝源数据
+      $('#tab_copy_choose_source').append("<option value='内网Branches'>内网Branches</option>");
+      $('#tab_copy_choose_source').append("<option value='内网Trunk'>内网Trunk</option>");
     });
   </script>
 
