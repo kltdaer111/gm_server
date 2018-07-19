@@ -303,9 +303,9 @@ ServerStatusSuit.prototype.set_operation_result = function (id, res) {
 }
 
 ServerStatusSuit.prototype.check_success_by_output = function (output) {
-    if (output.search(/error/i) >= 0) {
-        return false;
-    }
+    // if (output.search(/error/i) >= 0) {
+    //     return false;
+    // }
     if (output.indexOf('错误') >= 0) {
         return false;
     }
@@ -379,6 +379,9 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                 send_data.para2 = data.field.tab_copy_choose_version;
                 this.last_server_update[id] = this.UPDATE.UPDATE_BEGIN;
                 break;
+            case '代码更新':
+
+            break;
         }
         this.refresh_server_display(id);
         this.set_operation_result(id, '等待中');
