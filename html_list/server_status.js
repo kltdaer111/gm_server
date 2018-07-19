@@ -38,7 +38,6 @@ ServerStatusSuit.prototype.SHOW_STATE = {
     ABNORMAL: '异常',
     NO_DATA: '检测中',
     UPDATING: '更新中',
-    UPDATE_FAILED: '更新失败',
 };
 
 ServerStatusSuit.prototype.ACTION = {
@@ -55,7 +54,6 @@ ServerStatusSuit.prototype.ACTION = {
 ServerStatusSuit.prototype.UPDATE = {
     UPDATE_BEGIN: 1,
     UPDATE_END: 2,
-    UPDATE_END_FAILED: 3,
 };
 
 ServerStatusSuit.prototype.LOCAL_SERVER = ['db_server', 'gm_server', 'log_server', 'game_server', 'center_server', 'chat_server', 'gate_server', 'login_server'];
@@ -125,6 +123,7 @@ ServerStatusSuit.prototype.generate_table = function () {
                 <th>服务器ID</th>\
                 <th>服务器IP</th>\
                 <th>当前状态</th>\
+                <th>操作结果</th>\
               </tr>\
             </thead>\
             <tbody id="' + main_id + '">\
@@ -151,6 +150,7 @@ ServerStatusSuit.prototype.generate_table = function () {
         $(main_label).append('<td>' + res[idx]['server_id'] + '</td>');
         $(main_label).append('<td>' + res[idx]['ip'] + '</td>');
         $(main_label).append('<td id=' + this.dom_id + '_state_' + res[idx]['server_id'] + '>' + '检测中' + '</td>');
+        $(main_label).append('<td id=' + this.dom_id + '_result_' + res[idx]['server_id'] + '></td>');
         $(main_label).append('</tr>');
     }
     this.reg_checkbox_event();
@@ -213,18 +213,7 @@ ServerStatusSuit.prototype.refresh_last_server_action = function (server_id) {
 
 }
 
-/*
- * @return SHOW_STATE
- */
-ServerStatusSuit.prototype.get_display_state = function (server_id) {
-    var action = Number(this.last_server_action[server_id]);
-    var update = Number(this.last_server_update[server_id]);
-    if (update == this.UPDATE.UPDATE_BEGIN) {
-        return this.SHOW_STATE.UPDATING;
-    }
-    if (update == this.UPDATE.UPDATE_END_FAILED) {
-        return this.SHOW_STATE.UPDATE_FAILED;
-    }
+ServerStatusSuit.prototype.judge_state_by_last_action_and_serverstate = function (action, server_states) {
     switch (action) {
         case this.ACTION.START_BEGIN:
             return this.SHOW_STATE.STARTING;
@@ -237,7 +226,6 @@ ServerStatusSuit.prototype.get_display_state = function (server_id) {
         case this.ACTION.START_END:
         case this.ACTION.RESTART_START_END:
             {
-                var server_states = this.all_server_states[server_id];
                 for (server_name in server_states) {
                     if (server_states[server_name] != this.SERVER_STATE.RUNNING) {
                         return this.SHOW_STATE.DOWN;
@@ -249,7 +237,6 @@ ServerStatusSuit.prototype.get_display_state = function (server_id) {
         case this.ACTION.SHUT_END:
         case this.ACTION.RESTART_SHUT_END:
             {
-                var server_states = this.all_server_states[server_id];
                 for (server_name in server_states) {
                     if (server_states[server_name] != this.SERVER_STATE.CLOSED) {
                         return this.SHOW_STATE.CANTBECLOSED;
@@ -261,6 +248,19 @@ ServerStatusSuit.prototype.get_display_state = function (server_id) {
         default:
             return this.SHOW_STATE.NO_DATA;
     }
+}
+
+/*
+ * @return SHOW_STATE
+ */
+ServerStatusSuit.prototype.get_display_state = function (server_id) {
+    var action = Number(this.last_server_action[server_id]);
+    var update = Number(this.last_server_update[server_id]);
+    if (update == this.UPDATE.UPDATE_BEGIN) {
+        return this.SHOW_STATE.UPDATING;
+    }
+    var server_states = this.all_server_states[server_id];
+    return this.judge_state_by_last_action_and_serverstate(action, server_states);
 }
 
 ServerStatusSuit.prototype.start_interval_check = function () {
@@ -296,6 +296,25 @@ ServerStatusSuit.prototype.reg_checkbox_event = function () {
         });
     });
 }
+
+ServerStatusSuit.prototype.set_operation_result = function (id, res) {
+    var label = '#' + this.dom_id + '_result_' + id;
+    $(label).text(res);
+}
+
+ServerStatusSuit.prototype.check_success_by_output = function (output) {
+    if (output.search(/error/i) >= 0) {
+        return false;
+    }
+    if (output.indexOf('错误') >= 0) {
+        return false;
+    }
+    if (output.indexOf('失败') >= 0) {
+        return false;
+    }
+    return true;
+}
+
 /*
 * 执行操作：开启、关闭、重启服务器
 *
@@ -303,12 +322,15 @@ ServerStatusSuit.prototype.reg_checkbox_event = function () {
 */
 ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
     var send_data = {
-        'oper': oper,
-        'server': this.server_checked,
-        'user': 'admin',
+        oper: oper,
+        server: this.server_checked,
+        user: 'admin',
+        para1: '',
+        para2: '',
     };
     console.log(send_data);
     //立即更新状态
+    var alert_time = 0;
     for (id in this.server_checked) {
         switch (oper) {
             case '开启服务器':
@@ -322,9 +344,12 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                 break;
             case '关服更新':
                 if (this.get_display_state(id) !== this.SHOW_STATE.CLOSED) {
-                    var r = confirm("你确定要关闭服务器并更新吗?");
-                    if (r != true) {
-                        return;
+                    if (alert_time < 1) {
+                        alert_time += 1;
+                        var r = confirm("你确定要关闭服务器并更新吗?");
+                        if (r != true) {
+                            return;
+                        }
                     }
                 }
                 if (data.field.tab_copy_choose_source == "") {
@@ -341,7 +366,7 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                 this.last_server_update[id] = this.UPDATE.UPDATE_BEGIN;
                 break;
             case '不关服更新':
-                
+
                 if (data.field.tab_copy_choose_source == "") {
                     alert('请选择拷贝源!');
                     return;
@@ -356,33 +381,69 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                 break;
         }
         this.refresh_server_display(id);
+        this.set_operation_result(id, '等待中');
     }
     renderForm();
     var self = this;
     send_msg_to_server(2, send_data, function (resdata) {
         console.log('exec');
         console.log(resdata);
-        //TODO 检查是否成功
-        //TODO 最好改成实时更新
+        //更新服务器状态、判断操作是否成功
+        //TODO 把结果判断放到php里
         for (id in self.server_checked) {
             switch (oper) {
                 case '开启服务器':
                     self.last_server_action[id] = self.ACTION.START_END;
+                    self.gen_server_states(id, function (server_id) {
+                        var server_state = self.all_server_states[server_id];
+                        if (self.SHOW_STATE.RUNNING == self.judge_state_by_last_action_and_serverstate(self.ACTION.START_END, server_state)) {
+                            self.set_operation_result(server_id, '成功');
+                        }
+                        else {
+                            self.set_operation_result(server_id, '失败');
+                        }
+                        renderForm();
+                    });
                     break;
                 case '关闭服务器':
                     self.last_server_action[id] = self.ACTION.SHUT_END;
+                    self.gen_server_states(id, function (server_id) {
+                        var server_state = self.all_server_states[server_id];
+                        if (self.SHOW_STATE.CLOSED == self.judge_state_by_last_action_and_serverstate(self.ACTION.SHUT_END, server_state)) {
+                            self.set_operation_result(server_id, '成功');
+                        }
+                        else {
+                            self.set_operation_result(server_id, '失败');
+                        }
+                        renderForm();
+                    });
                     break;
                 case '重启服务器':
                     self.last_server_action[id] = self.ACTION.RESTART_START_END;
+                    self.gen_server_states(id, function (server_id) {
+                        var server_state = self.all_server_states[server_id];
+                        if (self.SHOW_STATE.RUNNING == self.judge_state_by_last_action_and_serverstate(self.ACTION.RESTART_START_END, server_state)) {
+                            self.set_operation_result(server_id, '成功');
+                        }
+                        else {
+                            self.set_operation_result(server_id, '失败');
+                        }
+                        renderForm();
+                    });
                     break;
                 case '关服更新':
                 case '不关服更新':
-                    if (resdata[id]['copy'] != '') {
-                        self.last_server_update[id] = self.UPDATE.UPDATE_END_FAILED;
+                    self.last_server_update[id] = self.UPDATE.UPDATE_END;
+                    if (resdata[id]['error_out'] != '') {
+                        self.set_operation_result(id, '失败');
+                    }
+                    else if (self.check_success_by_output(resdata[id]['standard_out']) === false) {
+                        self.set_operation_result(id, '失败');
                     }
                     else {
-                        self.last_server_update[id] = self.UPDATE.UPDATE_END;
+                        self.set_operation_result(id, '成功');
                     }
+                    renderForm();
                     break;
             }
         }

@@ -31,7 +31,7 @@ class SSH2Obj
 
     public function sync_operation($cmd){
         $stream = ssh2_exec($this->m_conn, $cmd);
-        log_debug($cmd);
+        //log_debug($cmd);
         stream_set_blocking($stream, true);
         return stream_get_contents($stream);
     }

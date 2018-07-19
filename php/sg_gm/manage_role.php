@@ -34,7 +34,7 @@
 			  $role_data = split("-",$role);
         $role_did = $role_data[0];
         $expired_time = $role_data[1];
-        $sql = "insert into manage_role set id = '$role_did', manage_type='$reply_data->manage_type', offset_time='$reply_data->offset_time', oper_time='$reply_data->oper_time', server_id='$reply_data->server_id', reason='$reply_data->reason', expired_time='$expired_time', oper_name='$reply_data->oper_name'";
+        $sql = "insert into manage_role_log set id = '$role_did', manage_type='$reply_data->manage_type', offset_time='$reply_data->offset_time', oper_time='$reply_data->oper_time', server_id='$reply_data->server_id', reason='$reply_data->reason', expired_time='$expired_time', oper_name='$reply_data->oper_name'";
         //echo $sql;
         $conn->query($sql);
       }

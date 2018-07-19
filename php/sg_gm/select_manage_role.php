@@ -23,7 +23,7 @@
         }
 		$ret_data=array();
 		foreach( $data->sid as $sid ){
-			  $sql = "SELECT  *  FROM `manage_role` where `server_id` = '$sid'";
+			  $sql = "SELECT  *  FROM `manage_role_log` where `server_id` = '$sid'";
 		      if(property_exists($data,"id"))
 		      {
 		        $sql .= "and id = '$data->id'";
