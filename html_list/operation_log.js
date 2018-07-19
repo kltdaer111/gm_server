@@ -7,11 +7,11 @@ function OperationLogTab(id, layui) {
     this.type = new Set();
 }
 
-OperationLogTab.prototype.addCol = function(col, name, func){
+OperationLogTab.prototype.addCol = function (col, name, func) {
     this.col.push([col, name, func]);
 }
 
-OperationLogTab.prototype.RegType = function(type){
+OperationLogTab.prototype.RegType = function (type) {
     this.type.add(type);
 }
 
@@ -67,7 +67,7 @@ OperationLogTab.prototype.initTab = function () {
         </div>\
       </div>\
     </form>\
-    <table class="layui-table">\
+    <table class="layui-table", page=true, lay-filter="' + this.genID('layuitable') + '">\
     <thead id=' + this.genID('log-col') + '>\
     </thead>\
     <tbody id=' + this.genID('log-table') + '>\
@@ -75,11 +75,17 @@ OperationLogTab.prototype.initTab = function () {
     </table>\
     </div>');
     var self = this;
-    this.layui.use(['form', 'laydate'], function () {
+    this.layui.use(['form', 'laydate', 'table'], function () {
         var laydate = self.layui.laydate;
         var form = self.layui.form;
-        //执行一个laydate实例
+        var table = self.layui.table;
+        //
+        // table.render({
+        //     elem: self.genLabel('layuitable'),
+        //     page: true,
+        // });
 
+        //执行一个laydate实例
         laydate.render({
             elem: self.genLabel('date'),
             type: 'datetime',
@@ -125,19 +131,19 @@ OperationLogTab.prototype.initTab = function () {
                 query_type: data.field[self.genID('query_choice')],
                 date: date,
             }
-            if(send_data.query_type == 'group'){
-                if(send_data.server_group == ''){
+            if (send_data.query_type == 'group') {
+                if (send_data.server_group == '') {
                     alert('请选择服务器组!');
                     return false;
                 }
             }
-            else{
-                if(send_data.server_id == ''){
+            else {
+                if (send_data.server_id == '') {
                     alert('请选择服务器名称!');
                     return false;
                 }
             }
-            if(send_data.date == ''){
+            if (send_data.date == '') {
                 alert('请输入时间范围!');
                 return false;
             }
@@ -147,30 +153,35 @@ OperationLogTab.prototype.initTab = function () {
                 $(self.genLabel('log-col')).empty();
                 $(self.genLabel('log-col')).append('<tr id=' + self.genID('thead') + '></tr>');
                 var head_label = self.genLabel('thead');
-                for(idx in self.col){
-                    $(head_label).append('<th>' + self.col[idx][1] + '</th>');
+                for (idx in self.col) {
+                    $(head_label).append('<th lay-data="{sort:true, field:\'' + self.col[idx][1]  + '\'}">' + self.col[idx][1] + '</th>');
                 }
-                
+
                 var res = result['data'];
                 var group_name = result['group'];
                 $(self.genLabel('log-table')).empty();
                 for (idx in res) {
                     res[idx]['group_name'] = group_name;
-                    if(!self.type.has(res[idx]['operation_type'])){
+                    if (!self.type.has(res[idx]['operation_type'])) {
                         continue;
                     }
                     var str = 'data' + idx;
                     var tr_xml = '<tr id=' + self.genID(str) + '></tr>';
                     $(self.genLabel('log-table')).append(tr_xml);
                     var label = self.genLabel(str);
-                    for(num in self.col){
+                    for (num in self.col) {
                         var data = res[idx][self.col[num][0]];
-                        if(self.col[num][2] !== undefined){
+                        if (self.col[num][2] !== undefined) {
                             data = self.col[num][2](data);
                         }
                         $(label).append('<td>' + data + '</td>');
                     }
                 }
+                //转换静态表格
+                table.init(self.genID('layuitable'), {
+                    limit: 10,
+                    page: true
+                });
                 renderForm();
             });
             return false;

@@ -281,7 +281,7 @@
       var array = data.split(';');
       return array[0];
     });
-  
+    tab_copylog.addCol('ip', '拷贝目标服务器IP');
     tab_copylog.addCol('operation_date', '操作时间');
     tab_copylog.RegType('不关服更新');
     tab_copylog.RegType('关服更新');
@@ -366,12 +366,6 @@
         });
         return false;
       });
-      //监听拷贝记录【查询】按钮
-      form.on('submit(tab_copylog_query', function (data) {
-        console.log(data);
-        return false;
-      });
-
 
       //监听tab_copy的select事件：选择拷贝源
       form.on('select(tab_copy_choose_source)', function (data) {

@@ -102,11 +102,11 @@ switch ($msg_id) {
 							$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
 							update_last_server_action($db_con, $server_id, 1, 'action');
 							$cmd = 'sh ' . $location . '/stop.sh -y';
-							log_debug(__LINE__);
-							log_debug($cmd);
+							// log_debug(__LINE__);
+							// log_debug($cmd);
 							$result_string = $ssh2_obj->sync_operation($cmd);
-							log_debug(__LINE__);
-							log_debug($result_string);
+							// log_debug(__LINE__);
+							// log_debug($result_string);
 							// log_debug($cmd);
 							//$res[$server_id] = $result_string;
 							update_last_server_action($db_con, $server_id, 2, 'action');
@@ -116,26 +116,28 @@ switch ($msg_id) {
 							$server_source = $msg_data['para1'];
 							$server_version = $msg_data['para2'];
 							$extra_data = $server_source . ';' . $server_version;
+							$standard_output = "./copylog/{$server_id}_{$now}_standard.log";
+							$error_output = "./copylog/{$server_id}_{$now}_error.log";
 							switch ($server_source) {
 								case '内网Branches':
 									$this_obj = new SSH2Obj('192.168.1.5', 22, 'branches', 'branches');
-									log_debug(__LINE__);
+									// log_debug(__LINE__);
 									$res[$server_id]['modify'] = $this_obj->sync_operation('cd ~/sg_server/sh && sh modify_version.sh ' . $server_version);
-									log_debug($res[$server_id]['modify']);
-									$this_obj->sync_operation("cd ~/sg_server/nohup_run && yes Yes | sh copy.sh {$ip} {$user} all 1>a.txt 2>b.txt");
-									$res[$server_id]['standard_out'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/a.txt");
-									$res[$server_id]['error_out'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/b.txt");
-									log_debug($res[$server_id]['standard_out']);
-									log_debug($res[$server_id]['error_out']);
+									// log_debug($res[$server_id]['modify']);
+									$this_obj->sync_operation("cd ~/sg_server/nohup_run && yes Yes | sh copy.sh {$ip} {$user} all 1>{$standard_output} 2>{$error_output}");
+									$res[$server_id]['standard_out'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/{$standard_output}");
+									$res[$server_id]['error_out'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/{$error_output}");
+									// log_debug($res[$server_id]['standard_out']);
+									// log_debug($res[$server_id]['error_out']);
 									break;
 								case '内网Trunk':
 									$this_obj = new SSH2Obj('192.168.1.5', 22, 'nei', 'nei');
 									$this_obj->sync_operation('cd ~/sg_server/nohup_run');
-									$this_obj->sync_operation("cd ~/sg_server/nohup_run && yes Yes | sh copy.sh {$ip} {$user} all 1>a.txt 2>b.txt");
-									$res[$server_id]['standard_out'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/a.txt");
-									$res[$server_id]['error_out'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/b.txt");
-									log_debug($res[$server_id]['standard_out']);
-									log_debug($res[$server_id]['error_out']);
+									$this_obj->sync_operation("cd ~/sg_server/nohup_run && yes Yes | sh copy.sh {$ip} {$user} all 1>{$standard_output} 2>{$error_output}");
+									$res[$server_id]['standard_out'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/{$standard_output}");
+									$res[$server_id]['error_out'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/{$error_output}");
+									// log_debug($res[$server_id]['standard_out']);
+									// log_debug($res[$server_id]['error_out']);
 									break;
 							}
 
@@ -198,13 +200,13 @@ switch ($msg_id) {
 			$end_date = $pieces[1];
 			$sql = "";
 			if ($msg_data['query_type'] == 'single') {
-				$sql = "SELECT server_operation_log.server_id,operation_type,operation_user,operation_date,server_name,extra_data FROM server_operation_log LEFT OUTER JOIN gm_server_list ON server_operation_log.server_id=gm_server_list.server_id WHERE server_operation_log.server_id={$msg_data['server_id']} AND UNIX_TIMESTAMP(operation_date)>=UNIX_TIMESTAMP('{$start_date}') AND UNIX_TIMESTAMP(operation_date)<=UNIX_TIMESTAMP('{$end_date}')";
+				$sql = "SELECT server_operation_log.server_id,ip,operation_type,operation_user,operation_date,server_name,extra_data FROM server_operation_log LEFT OUTER JOIN gm_server_list ON server_operation_log.server_id=gm_server_list.server_id WHERE server_operation_log.server_id={$msg_data['server_id']} AND UNIX_TIMESTAMP(operation_date)>=UNIX_TIMESTAMP('{$start_date}') AND UNIX_TIMESTAMP(operation_date)<=UNIX_TIMESTAMP('{$end_date}')";
 			} elseif ($msg_data['query_type'] == 'group') {
 				$group_name = $msg_data['server_group'];
 				$group_data = $msg_data['server_group_data'];
 				$start_id = $group_data[$group_name]['group_start_id'];
 				$end_id = $group_data[$group_name]['group_end_id'];
-				$sql = "SELECT GROUP_CONCAT(server_operation_log.server_id) AS server_id,MAX(operation_type) AS operation_type,MAX(operation_user) AS operation_user,MAX(operation_date) AS operation_date,GROUP_CONCAT(server_name) AS server_name,MAX(extra_data) AS extra_data FROM server_operation_log LEFT OUTER JOIN gm_server_list ON server_operation_log.server_id=gm_server_list.server_id WHERE server_operation_log.server_id>={$start_id} AND server_operation_log.server_id<={$end_id} AND UNIX_TIMESTAMP(operation_date)>=UNIX_TIMESTAMP('{$start_date}') AND UNIX_TIMESTAMP(operation_date)<=UNIX_TIMESTAMP('{$end_date}') GROUP BY operation_date";
+				$sql = "SELECT GROUP_CONCAT(server_operation_log.server_id) AS server_id,GROUP_CONCAT(ip) AS ip,MAX(operation_type) AS operation_type,MAX(operation_user) AS operation_user,MAX(operation_date) AS operation_date,GROUP_CONCAT(server_name) AS server_name,MAX(extra_data) AS extra_data FROM server_operation_log LEFT OUTER JOIN gm_server_list ON server_operation_log.server_id=gm_server_list.server_id WHERE server_operation_log.server_id>={$start_id} AND server_operation_log.server_id<={$end_id} AND UNIX_TIMESTAMP(operation_date)>=UNIX_TIMESTAMP('{$start_date}') AND UNIX_TIMESTAMP(operation_date)<=UNIX_TIMESTAMP('{$end_date}') GROUP BY operation_date";
 			} else {
 				return;
 			}
