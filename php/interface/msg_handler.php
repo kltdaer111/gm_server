@@ -143,6 +143,82 @@ switch ($msg_id) {
 
 							update_last_server_action($db_con, $server_id, 2, 'update');
 							break;
+						case '执行更新':
+							update_last_server_action($db_con, $server_id, 3, 'update');
+							$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
+							if ($msg_data['code'] !== '') {
+								$extra_data .= 'code:';
+								$extra_data .= $msg_data['code'];
+								$pieces = explode(';', $msg_data['code']);
+								$cmd = "cd {$location}/../trunk && svn up";
+								foreach ($pieces as $file) {
+									$cmd .= ' ';
+									$cmd .= $file;
+								}
+								$return_array = $ssh2_obj->sync_oper($cmd);
+								$res[$server_id]['code'] = array();
+								$res[$server_id]['code']['standard_out'] = $return_array[0];
+								$res[$server_id]['code']['error_out'] = $return_array[1];
+								$extra_data .= ',';
+							}
+							if ($msg_data['map'] !== '') {
+								$extra_data .= 'map:';
+								$extra_data .= $msg_data['map'];
+								$pieces = explode(';', $msg_data['map']);
+								$res[$server_id]['map'] = array('standard_out' => '', 'error_out' => '');
+								$standard_out = '';
+								$error_out = '';
+								foreach ($pieces as $file) {
+									$cmd = "cd {$location}/../trunk && sh update.sh map {$file}";
+									$return_array = $ssh2_obj->sync_oper($cmd);
+									$standard_out .= $return_array[0];
+									$standard_out .= ',';
+									$error_out .= $return_array[1];
+									$error_out .= ',';
+								}
+								$res[$server_id]['map']['standard_out'] .= substr($standard_out, 0, strlen($standard_out) - 1);
+								$res[$server_id]['map']['error_out'] = substr($error_out, 0, strlen($error_out) - 1);
+							}
+							if ($msg_data['lua'] !== '') {
+								$extra_data .= 'lua:';
+								$extra_data .= $msg_data['lua'];
+								$extra_data .= ',';
+								$pieces = explode(';', $msg_data['lua']);
+								$res[$server_id]['lua'] = array('standard_out' => '', 'error_out' => '');
+								$standard_out = '';
+								$error_out = '';
+								foreach ($pieces as $file) {
+									$cmd = "cd {$location}/../trunk && sh update.sh lua {$file}";
+									$return_array = $ssh2_obj->sync_oper($cmd);
+									$standard_out .= $return_array[0];
+									$standard_out .= ',';
+									$error_out .= $return_array[1];
+									$error_out .= ',';
+								}
+								$res[$server_id]['lua']['standard_out'] .= substr($standard_out, 0, strlen($standard_out) - 1);
+								$res[$server_id]['lua']['error_out'] = substr($error_out, 0, strlen($error_out) - 1);
+							}
+							if ($msg_data['tbl'] !== '') {
+								$extra_data .= 'tbl:';
+								$extra_data .= $msg_data['tbl'];
+								$pieces = explode(';', $msg_data['tbl']);
+								$res[$server_id]['tbl'] = array('standard_out' => '', 'error_out' => '');
+								$standard_out = '';
+								$error_out = '';
+								foreach ($pieces as $file) {
+									$cmd = "cd {$location}/../trunk && sh update.sh tbl {$file}";
+									$return_array = $ssh2_obj->sync_oper($cmd);
+									log_debug($cmd);
+									$standard_out .= $return_array[0];
+									$standard_out .= ',';
+									$error_out .= $return_array[1];
+									$error_out .= ',';
+								}
+								$res[$server_id]['tbl']['standard_out'] .= substr($standard_out, 0, strlen($standard_out) - 1);
+								$res[$server_id]['tbl']['error_out'] = substr($error_out, 0, strlen($error_out) - 1);
+							}
+							update_last_server_action($db_con, $server_id, 4, 'update');
+							break;
 					}
 					//添加日志
 
@@ -285,6 +361,12 @@ switch ($msg_id) {
 			$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
 			// log_debug($cmd);
 			echo json_encode($ssh2_obj->sync_operation($cmd));
+		}
+		break;
+	//更新服务器
+	case 9:
+		{
+
 		}
 		break;
 	default:

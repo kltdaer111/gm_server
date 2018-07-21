@@ -54,6 +54,9 @@ ServerStatusSuit.prototype.ACTION = {
 ServerStatusSuit.prototype.UPDATE = {
     UPDATE_BEGIN: 1,
     UPDATE_END: 2,
+    UPDATEFILE_BEGIN: 3,
+    UPDATEFILE_END: 4,
+
 };
 
 ServerStatusSuit.prototype.LOCAL_SERVER = ['db_server', 'gm_server', 'log_server', 'game_server', 'center_server', 'chat_server', 'gate_server', 'login_server'];
@@ -321,14 +324,21 @@ ServerStatusSuit.prototype.check_success_by_output = function (output) {
 *
 */
 ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
+    var total = 0;
+    for(id in this.server_checked){
+        total++;
+    }
+    if(total == 0){
+        alert("请选择服务器!");
+        return;
+    }
     var send_data = {
         oper: oper,
         server: this.server_checked,
         user: 'admin',
-        para1: '',
-        para2: '',
     };
     console.log(send_data);
+    console.log(data);
     //立即更新状态
     var alert_time = 0;
     for (id in this.server_checked) {
@@ -379,9 +389,13 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                 send_data.para2 = data.field.tab_copy_choose_version;
                 this.last_server_update[id] = this.UPDATE.UPDATE_BEGIN;
                 break;
-            case '代码更新':
-
-            break;
+            case '执行更新':
+                send_data['code'] = data.tab_update_text1;
+                send_data['tbl'] = data.tab_update_text2;
+                send_data['lua'] = data.tab_update_text3;
+                send_data['map'] = data.tab_update_text4;
+                this.last_server_update[id] = this.UPDATE.UPDATEFILE_BEGIN;
+                break;
         }
         this.refresh_server_display(id);
         this.set_operation_result(id, '等待中');
@@ -446,6 +460,27 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                     else {
                         self.set_operation_result(id, '成功');
                     }
+                    renderForm();
+                    break;
+                case '执行更新':
+                    self.last_server_update[id] = self.UPDATE.UPDATEFILE_END;
+                    var result = '';
+                    for(idx in resdata[id]){
+                        if (resdata[id][idx]['error_out'] != '') {
+                            result += idx + '更新失败';
+                        }
+                        else if (self.check_success_by_output(resdata[id][idx]['standard_out']) === false) {
+                            result += idx + '更新失败';
+                        }
+                        else {
+                            result += idx + '更新成功';
+                        }
+                        result += ';';
+                    }
+                    result
+                    console.log(result);
+                    self.set_operation_result(id, result);
+                    
                     renderForm();
                     break;
             }
