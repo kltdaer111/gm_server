@@ -728,3 +728,21 @@ function is_ip(value) {
 	var result = reg.test(value);
 	return result;
 }
+
+function rpc_call(controller, func, msg_data, call_back) {
+	var url = '../ci/index.php/' + controller + '/' + func;
+	$.ajax({
+		type: "POST",
+		url: url,
+		dataType: "json",
+		data: JSON.stringify(msg_data),
+		success: function (res) {
+			if (call_back !== undefined) {
+				call_back(res);
+			}
+		},
+		error: function (err) {
+			console.log(err);
+		}
+	});
+}

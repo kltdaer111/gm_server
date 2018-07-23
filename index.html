@@ -47,10 +47,10 @@
                                     <a href="javascript:;" onClick="myselfinfo()">个人信息</a>
                                 </li>
                                 <li>
-                                    <a href="login.html">切换账户</a>
+                                    <a href="html_list/login.html">切换账户</a>
                                 </li>
                                 <li>
-                                    <a href="login.html" onclick="exist_login()">退出</a>
+                                    <a href="html_list/login.html" onclick="exist_login()">退出</a>
                                 </li>
                             </ul>
                         </li>
@@ -183,7 +183,7 @@
                 //console.log(window.sessionStorage);
                 var storage = window.localStorage;
                 if (storage.account == null) {
-                    window.location.href = "login.html";
+                    window.location.href = "html_list/login.html";
                 }
                 show_list(storage.account);
                 reload_select_list("index");
