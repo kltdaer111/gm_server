@@ -3,8 +3,9 @@
   <head>
     <meta charset="UTF-8">
     <title>Login Form</title>
-    <link href="dep/lib/layui/css/layui.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="dep/static/h-ui/css/normalize.css">
+    <link href="../dep/lib/layui/css/layui.css" rel="stylesheet" type="text/css"
+      />
+    <link rel="stylesheet" href="../dep/static/h-ui/css/normalize.css">
 
     <style type="text/css">
 .btn { display: inline-block; *display: inline; *zoom: 1; padding: 4px 10px 4px; margin-bottom: 0; font-size: 13px; line-height: 18px; color: #333333; text-align: center;text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75); vertical-align: middle; background-color: #f5f5f5; background-image: -moz-linear-gradient(top, #ffffff, #e6e6e6); background-image: -ms-linear-gradient(top, #ffffff, #e6e6e6); background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), to(#e6e6e6)); background-image: -webkit-linear-gradient(top, #ffffff, #e6e6e6); background-image: -o-linear-gradient(top, #ffffff, #e6e6e6); background-image: linear-gradient(top, #ffffff, #e6e6e6); background-repeat: repeat-x; filter: progid:dximagetransform.microsoft.gradient(startColorstr=#ffffff, endColorstr=#e6e6e6, GradientType=0); border-color: #e6e6e6 #e6e6e6 #e6e6e6; border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25); border: 1px solid #e6e6e6; -webkit-border-radius: 4px; -moz-border-radius: 4px; border-radius: 4px; -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05); -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05); cursor: pointer; *margin-left: .3em; }
@@ -76,12 +77,13 @@ input:focus { box-shadow: inset 0 -5px 45px rgba(100,100,100,0.4), 0 1px 1px rgb
           />
         <button type="button" class="btn btn-primary btn-block btn-large"
           onclick="user_login()">登录</button>
-          <button type="button" class="btn btn-primary btn-block btn-large"
+        <button type="button" class="btn btn-primary btn-block btn-large"
           onclick="user_login()">注册</button>
       </form>
     </div>
-    <script type="text/javascript" src="dep/lib/jquery.min.js"></script>
-    <script type="text/javascript" src="dep/lib/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="../dep/lib/jquery.min.js"></script>
+    <script type="text/javascript" src="../dep/lib/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="../dep/js/common.js"></script>
     <script type="text/javascript">
 
     function user_login()
@@ -89,31 +91,15 @@ input:focus { box-shadow: inset 0 -5px 45px rgba(100,100,100,0.4), 0 1px 1px rgb
       // console.log("++++++++++++++++++++++++");
       var login = $('input[name="login"]').val();
       var pwd = $('input[name="pwd"]').val();
-      $.ajax({
-        type: "GET",
-        url:  "ci/index.php/account/login",
-        dataType: "json",
-        data: {
-            "login": login,
-            "pwd": pwd
-        },
-        success: function (data) {
-          //console.log("--------------------------");
-          //console.log(data);
-          if (data.code == 200) {
-              var storage = window.localStorage;
-              storage["account"] = 'admin';
-              // console.log('aaaaaaaaaaaaaaa');
-              //跳转操作
-              window.location.href = "index.html";
-          }else {
-            alert(data.Text);
-          }
-        },
-        error: function (er) {
-          console.log(er);
-          //document.write(JSON.stringify(er));
-        },
+      var send_data = {
+        "login": login,
+        "pwd": pwd
+      }
+      rpc_call('Account', 'login', send_data, function(res){
+        var storage = window.localStorage;
+        storage["account"] = 'admin';
+        //跳转操作
+        window.location.href = "index.html";
       });
     }
                  
