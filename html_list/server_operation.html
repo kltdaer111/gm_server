@@ -579,6 +579,15 @@
           var label = '#tab_update_checkbox' + id;
           var text_id = 'tab_update_text' + id;
           if($(label).prop('checked') === true){
+            if(id == 1){
+              //更新代码必须关服
+              for(checked_id in tab_update_server_status.server_checked){
+                if(tab_update_server_status.get_display_state(checked_id) != tab_update_server_status.SHOW_STATE.CLOSED){
+                  alert('更新代码必须关服！');
+                  return false;
+                }
+              }
+            }
             res[text_id] = data.field[text_id];
           }
           else{
