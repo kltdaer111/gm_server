@@ -155,7 +155,7 @@ switch ($msg_id) {
 									$cmd .= ' ';
 									$cmd .= $file;
 								}
-								$cmd .= ' && make j11';
+								$cmd .= ' && make -j11';
 								$return_array = $ssh2_obj->sync_oper($cmd);
 								$res[$server_id]['code'] = array();
 								$res[$server_id]['code']['standard_out'] = $return_array[0];
