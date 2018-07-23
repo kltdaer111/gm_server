@@ -587,6 +587,20 @@
                   return false;
                 }
               }
+              var code_input = data.field[text_id];
+              //检查分隔符
+              if(code_input.search(/[,]/) > 0){
+                alert('请以分号为分隔符');
+                return false;
+              }
+              //检查是否有后缀
+              if(code_input != 'all'){
+                if(code_input.search(/\./) < 0){
+                  alert('不可输入文件夹；文件名请输入后缀');
+                  return false;
+                }
+              }
+              
             }
             res[text_id] = data.field[text_id];
           }
