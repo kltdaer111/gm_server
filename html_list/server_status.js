@@ -16,6 +16,14 @@ function ServerStatusSuit(dom_id, server_data, group_name, check_interval, layui
     this.all_server_states = {};
     //选中的服务器
     this.server_checked = {};
+    //错误结果
+    this.error_log = {};
+    //标准结果
+    this.standard_log = {};
+    //标准结果按钮filter
+    this.standard_button_filter = this.dom_id + '_resultlog_standard'; 
+    //错误结果按钮filter
+    this.error_button_filter = this.dom_id + '_resultlog_error'; 
     this.layui = layui;
 }
 
@@ -127,6 +135,7 @@ ServerStatusSuit.prototype.generate_table = function () {
                 <th>服务器IP</th>\
                 <th>当前状态</th>\
                 <th>操作结果</th>\
+                <th>结果日志</th>\
               </tr>\
             </thead>\
             <tbody id="' + main_id + '">\
@@ -154,9 +163,11 @@ ServerStatusSuit.prototype.generate_table = function () {
         $(main_label).append('<td>' + res[idx]['ip'] + '</td>');
         $(main_label).append('<td id=' + this.dom_id + '_state_' + res[idx]['server_id'] + '>' + '检测中' + '</td>');
         $(main_label).append('<td id=' + this.dom_id + '_result_' + res[idx]['server_id'] + '></td>');
+        $(main_label).append('<td id=' + this.dom_id + '_resultlog_' + res[idx]['server_id'] + '></td>');
         $(main_label).append('</tr>');
     }
     this.reg_checkbox_event();
+    this.reg_result_log_button();
     renderForm();
 }
 
@@ -305,6 +316,44 @@ ServerStatusSuit.prototype.set_operation_result = function (id, res) {
     $(label).text(res);
 }
 
+ServerStatusSuit.prototype.reg_result_log_button = function(){
+    var self = this;
+    this.layui.use(['form', 'layer'], function(){
+        var form = self.layui.form;
+        var layer = self.layui.layer;
+        var standard_filter = 'submit(' + self.standard_button_filter + ')';
+        var error_filter = 'submit(' + self.error_button_filter + ')';
+        form.on(standard_filter, function(data){
+            var log = self.standard_log[data.elem.id];
+            layer.open({
+                title : '标准日志',
+                content : log,
+                area : '800px',
+            });
+        });
+        form.on(error_filter, function(data){
+            var log = self.error_log[data.elem.id];
+            layer.open({
+                title : '错误日志',
+                content : log,
+                area : '800px',
+            });
+        });
+        return false;
+    });
+}
+
+ServerStatusSuit.prototype.add_operation_result_log = function (id, standard_log, error_log) {
+    var dom_id = this.dom_id + '_resultlog_' + id;
+    var label = '#' + dom_id;
+    var standard_button_id = this.standard_button_filter + id;
+    var error_button_id = this.error_button_filter + id;
+    $(label).append('<div class="layui-btn-group"><button class="layui-btn" lay-submit id="' + standard_button_id + '" lay-filter="' + this.standard_button_filter + '">标准</button><button class="layui-btn" lay-submit id="' + error_button_id + '" lay-filter="' + this.error_button_filter + '">错误</button></div>');
+    this.error_log[error_button_id] = error_log;
+    this.standard_log[standard_button_id] = standard_log;
+    //this.reg_result_log_button();
+}
+
 ServerStatusSuit.prototype.check_success_by_output = function (output) {
     // if (output.search(/error/i) >= 0) {
     //     return false;
@@ -325,10 +374,10 @@ ServerStatusSuit.prototype.check_success_by_output = function (output) {
 */
 ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
     var total = 0;
-    for(id in this.server_checked){
+    for (id in this.server_checked) {
         total++;
     }
-    if(total == 0){
+    if (total == 0) {
         alert("请选择服务器!");
         return;
     }
@@ -407,10 +456,14 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
         console.log(resdata);
         //更新服务器状态、判断操作是否成功
         //TODO 把结果判断放到php里
+        var error_log = '';
+        var standard_log = '';
         for (id in self.server_checked) {
             switch (oper) {
                 case '开启服务器':
                     self.last_server_action[id] = self.ACTION.START_END;
+                    error_log += resdata[id]['error_out'];
+                    standard_log += resdata[id];
                     self.gen_server_states(id, function (server_id) {
                         var server_state = self.all_server_states[server_id];
                         if (self.SHOW_STATE.RUNNING == self.judge_state_by_last_action_and_serverstate(self.ACTION.START_END, server_state)) {
@@ -419,11 +472,14 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                         else {
                             self.set_operation_result(server_id, '失败');
                         }
+                        self.add_operation_result_log(id, standard_log, error_log);
                         renderForm();
                     });
                     break;
                 case '关闭服务器':
                     self.last_server_action[id] = self.ACTION.SHUT_END;
+                    error_log += resdata[id]['error_out'];
+                    standard_log += resdata[id];
                     self.gen_server_states(id, function (server_id) {
                         var server_state = self.all_server_states[server_id];
                         if (self.SHOW_STATE.CLOSED == self.judge_state_by_last_action_and_serverstate(self.ACTION.SHUT_END, server_state)) {
@@ -432,11 +488,14 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                         else {
                             self.set_operation_result(server_id, '失败');
                         }
+                        self.add_operation_result_log(id, standard_log, error_log);
                         renderForm();
                     });
                     break;
                 case '重启服务器':
                     self.last_server_action[id] = self.ACTION.RESTART_START_END;
+                    error_log += resdata[id]['error_out'];
+                    standard_log += resdata[id];
                     self.gen_server_states(id, function (server_id) {
                         var server_state = self.all_server_states[server_id];
                         if (self.SHOW_STATE.RUNNING == self.judge_state_by_last_action_and_serverstate(self.ACTION.RESTART_START_END, server_state)) {
@@ -445,12 +504,15 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                         else {
                             self.set_operation_result(server_id, '失败');
                         }
+                        self.add_operation_result_log(id, standard_log, error_log);
                         renderForm();
                     });
                     break;
                 case '关服更新':
                 case '不关服更新':
                     self.last_server_update[id] = self.UPDATE.UPDATE_END;
+                    error_log += resdata[id]['error_out'];
+                    standard_log += resdata[id]['standard_out'];
                     if (resdata[id]['error_out'] != '') {
                         self.set_operation_result(id, '失败');
                     }
@@ -460,12 +522,19 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                     else {
                         self.set_operation_result(id, '成功');
                     }
+                    self.add_operation_result_log(id, standard_log, error_log);
                     renderForm();
                     break;
                 case '执行更新':
                     self.last_server_update[id] = self.UPDATE.UPDATEFILE_END;
                     var result = '';
-                    for(idx in resdata[id]){
+                    for (idx in resdata[id]) {
+                        error_log += 'idx\n';
+                        error_log += resdata[id][idx]['error_out'];
+                        error_log += '\n';
+                        standard_log += 'idx\n';
+                        standard_log += resdata[id][idx]['standard_out'];
+                        standard_log += '\n';
                         if (resdata[id][idx]['error_out'] != '') {
                             result += idx + '更新失败';
                         }
@@ -477,13 +546,12 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                         }
                         result += ';';
                     }
-                    result
-                    console.log(result);
                     self.set_operation_result(id, result);
-                    
+                    self.add_operation_result_log(id, standard_log, error_log);
                     renderForm();
                     break;
             }
+            renderForm();
         }
     });
 }
