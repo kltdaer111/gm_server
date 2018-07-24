@@ -37,7 +37,10 @@ switch ($msg_id) {
 			if ($db_con->connect_errno) {
 				throw new Exception("NO DB CONNECTION " . $db_con->connect_error);
 			}
-			$sql = "SELECT gm_server_list.server_id,server_name,server_ssh.ip,username,location,last_server_action FROM gm_server_list LEFT OUTER JOIN server_ssh ON gm_server_list.server_id=server_ssh.server_id LEFT OUTER JOIN server_action ON gm_server_list.server_id=server_action.server_id WHERE gm_server_list.server_id >= {$msg_data['start_id']} AND gm_server_list.server_id <= {$msg_data['end_id']};";
+			if($msg_data['server_type'] === null){
+				$msg_data['server_type'] = 'server';
+			}
+			$sql = "SELECT server_ssh.server_id,server_name,server_ssh.ip,username,location,last_server_action FROM server_ssh LEFT OUTER JOIN gm_server_list ON gm_server_list.server_id=server_ssh.server_id LEFT OUTER JOIN server_action ON gm_server_list.server_id=server_action.server_id WHERE server_ssh.server_id >= {$msg_data['start_id']} AND server_ssh.server_id <= {$msg_data['end_id']} AND server_ssh.server_type = '{$msg_data['server_type']}';";
 			$result = $db_con->query($sql);
 			$result_array = array();
 			while ($array_data = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
@@ -67,6 +70,15 @@ switch ($msg_id) {
 					switch ($msg_data['oper']) {
 						case '开启服务器':
 							$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
+							update_last_server_action($db_con, $server_id, 3, 'action');
+							$cmd = 'sh ' . $location . '/run.sh -y';
+							// log_debug($cmd);
+							$result_string = $ssh2_obj->sync_operation($cmd);
+							$res[$server_id] = $result_string;
+							update_last_server_action($db_con, $server_id, 4, 'action');
+							break;
+						case '开启全局服':
+						$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
 							update_last_server_action($db_con, $server_id, 3, 'action');
 							$cmd = 'sh ' . $location . '/run.sh -y';
 							// log_debug($cmd);

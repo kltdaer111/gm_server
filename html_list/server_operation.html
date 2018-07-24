@@ -109,6 +109,7 @@
     <div class="layui-tab layui-tab-card">
       <ul class="layui-tab-title">
         <li class="layui-this">服务器操作</li>
+        <li>全局服操作</li>
         <li>操作记录</li>
         <li>服务器拷贝</li>
         <li>拷贝记录</li>
@@ -170,6 +171,68 @@
               </div>
             </form>
             <table class="layui-table" id='tab_oper_status'>
+              <!-- <colgroup>
+              <col width="150">
+              <col width="200">
+              <col>
+            </colgroup> -->
+            </table>
+          </div>
+        </div>
+        <div class="layui-tab-item">
+          <!-- 全局服操作 -->
+          <div class="layui-fluid">
+            <form class="layui-form" action="">
+
+              <div class="layui-row">
+                <div class="layui-col-lg1">
+                  <label class="layui-form-label">游戏</label>
+                </div>
+                <div class="layui-col-lg4">
+                  <select name="choose_game">
+                    <option value="">请选择游戏</option>
+                    <option value="0">少年逆命师</option>
+                  </select>
+                </div>
+
+                <div class="layui-col-lg1">
+                  <label class="layui-form-label">服务器组</label>
+                </div>
+
+                <div class="layui-col-lg4">
+                  <select name="choose_server" id='tab_global_group'>
+                    <option value="">请选择服务器</option>
+                  </select>
+                </div>
+
+                <div class="layui-col-lg1 layui-col-md-offset1">
+                  <button class="layui-btn" lay-submit lay-filter='tab_global_filter'>筛选</button>
+                </div>
+              </div>
+              <div class="layui-row">
+                <div class="layui-input-block"></div>
+              </div>
+              <div class="layui-row">
+
+                <div class="layui-col-lg3 layui-col-md-offset1">
+                  <input type="radio" name="tab_global_operation" value='开启全局服'
+                    title='开启服务器'>
+                </div>
+                <div class="layui-col-lg3">
+                  <input type="radio" name="tab_global_operation" value='关闭全局服'
+                    title="关闭服务器">
+                </div>
+                <div class="layui-col-lg3">
+                  <input type="radio" name="tab_global_operation" value='重启全局服'
+                    title="重启服务器">
+                </div>
+
+                <div class="layui-col-lg1 layui-col-md-offset1">
+                  <button class="layui-btn" lay-submit lay-filter='tab_global_exec'>执行</button>
+                </div>
+              </div>
+            </form>
+            <table class="layui-table" id='tab_global_status'>
               <!-- <colgroup>
               <col width="150">
               <col width="200">
@@ -466,7 +529,7 @@
       renderForm();
     }
 
-    var tab_oper_server_status, tab_copy_server_status, tab_update_server_status;
+    var tab_oper_server_status, tab_copy_server_status, tab_update_server_status, tab_global_server_status;
 
     var tab_actionlog = new OperationLogTab('tab_actionlog', layui);
     tab_actionlog.RegType('开启服务器');
@@ -617,6 +680,29 @@
       form.on('submit(tab_update_clearall)', function(data){
 
         return true;
+      });
+      //监听tab_global【筛选】按钮
+      form.on('submit(tab_global_filter)', function (data) {
+        console.log(data);
+        console.log(server_group_data);
+        if (tab_global_server_status !== undefined) {
+          tab_global_server_status.stop_interval_check();
+        }
+        var group_name = data.field.tab_global_choosegroup;
+        var start_id = server_group_data[group_name]['global_start_id'];
+        var end_id = server_group_data[group_name]['global_end_id'];
+        var send_data = {
+          'start_id': start_id,
+          'end_id': end_id,
+          'server_type': 'global',
+        };
+        send_msg_to_server(1, send_data, function (res) {
+          console.log(res);
+          tab_global_server_status = new ServerStatusSuit('tab_global_status', res, group_name, 10000, layui);
+          tab_global_server_status.generate_table();
+          tab_global_server_status.start_interval_check();
+        });
+        return false;
       });
       //监听tab_update【筛选】按钮
       form.on('submit(tab_update_filter)', function (data) {
