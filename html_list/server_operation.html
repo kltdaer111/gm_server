@@ -600,9 +600,13 @@
                   return false;
                 }
               }
+              //all换成.
+              else{
+                code_input = '.';
+              }
               
             }
-            res[text_id] = data.field[text_id];
+            res[text_id] = code_input;
           }
           else{
             res[text_id] = '';
