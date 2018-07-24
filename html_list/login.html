@@ -95,11 +95,11 @@ input:focus { box-shadow: inset 0 -5px 45px rgba(100,100,100,0.4), 0 1px 1px rgb
         "login": login,
         "pwd": pwd
       }
-      rpc_call('Account', 'login', send_data, function(res){
+      rpc_call('account', 'login', send_data, function(res){
         var storage = window.localStorage;
         storage["account"] = 'admin';
         //跳转操作
-        window.location.href = "index.html";
+        window.location.href = "../index.html";
       });
     }
                  
