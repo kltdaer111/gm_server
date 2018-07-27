@@ -1,4 +1,4 @@
-function ServerStatusSuit(dom_id, server_data, group_name, check_interval, layui) {
+function ServerStatusSuit(type, dom_id, server_data, group_name, check_interval, layui) {
     this.dom_id = dom_id;
     this.server_data = server_data;
     this.group_name = group_name;
@@ -24,6 +24,16 @@ function ServerStatusSuit(dom_id, server_data, group_name, check_interval, layui
     this.standard_button_filter = this.dom_id + '_resultlog_standard'; 
     //错误结果按钮filter
     this.error_button_filter = this.dom_id + '_resultlog_error'; 
+    //
+    if(type == 'server'){
+        this.server_names = this.LOCAL_SERVER;
+    }
+    else if(type === 'global'){
+        this.server_names = this.GLOBAL_SERVER;
+    }
+    else{
+        throw new Exception("Wrong ServerStatusSuit type");
+    }
     this.layui = layui;
 }
 
@@ -64,7 +74,6 @@ ServerStatusSuit.prototype.UPDATE = {
     UPDATE_END: 2,
     UPDATEFILE_BEGIN: 3,
     UPDATEFILE_END: 4,
-
 };
 
 ServerStatusSuit.prototype.LOCAL_SERVER = ['db_server', 'gm_server', 'log_server', 'game_server', 'center_server', 'chat_server', 'gate_server', 'login_server'];
@@ -184,7 +193,7 @@ ServerStatusSuit.prototype.get_new_state_and_refresh_display = function (server_
 
 ServerStatusSuit.prototype.refresh_server_display = function (server_id) {
     var new_state = this.get_display_state(server_id);
-    // console.log(this.all_server_states[server_id]);
+    //console.log(this.all_server_states[server_id]);
     // console.log(server_id + ':' + new_state);
     var label = '#' + this.dom_id + '_state_' + server_id;
     // console.log(label);
@@ -196,12 +205,12 @@ ServerStatusSuit.prototype.gen_server_states = function (server_id, callback) {
     var self = this;
     send_msg_to_server(3, server_id, function (res) {
         // console.log(typeof(res));
-        // console.log(res);
+        //console.log(res);
         res = filter_color_char(res);
         // console.log(res);
         var server_states = {};
-        for (idx in self.LOCAL_SERVER) {
-            var server_name = self.LOCAL_SERVER[idx];
+        for (idx in self.server_names) {
+            var server_name = self.server_names[idx];
             //var offset = res.search(server_name);
             var offset = self.match_whole_word(res, server_name, 0, false, true);
             if (offset == -1) {
@@ -348,6 +357,7 @@ ServerStatusSuit.prototype.add_operation_result_log = function (id, standard_log
     var label = '#' + dom_id;
     var standard_button_id = this.standard_button_filter + id;
     var error_button_id = this.error_button_filter + id;
+    $(label).empty();
     $(label).append('<div class="layui-btn-group"><button class="layui-btn" lay-submit id="' + standard_button_id + '" lay-filter="' + this.standard_button_filter + '">标准</button><button class="layui-btn" lay-submit id="' + error_button_id + '" lay-filter="' + this.error_button_filter + '">错误</button></div>');
     this.error_log[error_button_id] = error_log;
     this.standard_log[standard_button_id] = standard_log;
@@ -374,12 +384,22 @@ ServerStatusSuit.prototype.check_success_by_output = function (output) {
 */
 ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
     var total = 0;
+    var str = '';
     for (id in this.server_checked) {
+        str += '[';
+        str += id;
+        str += '] ';
         total++;
     }
     if (total == 0) {
         alert("请选择服务器!");
         return;
+    }
+    else{
+        var res = confirm('你确定要对服务器' + str + '执行-' + oper + '-操作吗?');
+        if(res === false){
+            return;
+        }
     }
     var send_data = {
         oper: oper,
@@ -453,7 +473,7 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
     var self = this;
     send_msg_to_server(2, send_data, function (resdata) {
         console.log('exec');
-        console.log(resdata);
+        //console.log(resdata);
         //更新服务器状态、判断操作是否成功
         //TODO 把结果判断放到php里
         var error_log = '';
@@ -462,8 +482,14 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
             switch (oper) {
                 case '开启服务器':
                     self.last_server_action[id] = self.ACTION.START_END;
-                    error_log += resdata[id]['error_out'];
-                    standard_log += resdata[id];
+                    var this_standard_log = '';
+                    var this_error_log = '';
+                    for(idx in resdata[id]['standard_out']){
+                        this_standard_log += resdata[id]['standard_out'][idx];
+                    }
+                    for(idx in resdata[id]['error_out']){
+                        this_error_log += resdata[id]['error_out'][idx];
+                    }
                     self.gen_server_states(id, function (server_id) {
                         var server_state = self.all_server_states[server_id];
                         if (self.SHOW_STATE.RUNNING == self.judge_state_by_last_action_and_serverstate(self.ACTION.START_END, server_state)) {
@@ -472,14 +498,20 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                         else {
                             self.set_operation_result(server_id, '失败');
                         }
-                        self.add_operation_result_log(id, standard_log, error_log);
+                        self.add_operation_result_log(id, this_standard_log, this_error_log);
                         renderForm();
                     });
                     break;
                 case '关闭服务器':
                     self.last_server_action[id] = self.ACTION.SHUT_END;
-                    error_log += resdata[id]['error_out'];
-                    standard_log += resdata[id];
+                    var this_standard_log = '';
+                    var this_error_log = '';
+                    for(idx in resdata[id]['standard_out']){
+                        this_standard_log += resdata[id]['standard_out'][idx];
+                    }
+                    for(idx in resdata[id]['error_out']){
+                        this_error_log += resdata[id]['error_out'][idx];
+                    }
                     self.gen_server_states(id, function (server_id) {
                         var server_state = self.all_server_states[server_id];
                         if (self.SHOW_STATE.CLOSED == self.judge_state_by_last_action_and_serverstate(self.ACTION.SHUT_END, server_state)) {
@@ -488,14 +520,18 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                         else {
                             self.set_operation_result(server_id, '失败');
                         }
-                        self.add_operation_result_log(id, standard_log, error_log);
+                        self.add_operation_result_log(id, this_standard_log, this_error_log);
                         renderForm();
                     });
                     break;
                 case '重启服务器':
                     self.last_server_action[id] = self.ACTION.RESTART_START_END;
-                    error_log += resdata[id]['error_out'];
-                    standard_log += resdata[id];
+                    for(idx in resdata[id]['standard_out']){
+                        this_standard_log += resdata[id]['standard_out'][idx];
+                    }
+                    for(idx in resdata[id]['error_out']){
+                        this_error_log += resdata[id]['error_out'][idx];
+                    }
                     self.gen_server_states(id, function (server_id) {
                         var server_state = self.all_server_states[server_id];
                         if (self.SHOW_STATE.RUNNING == self.judge_state_by_last_action_and_serverstate(self.ACTION.RESTART_START_END, server_state)) {
@@ -504,41 +540,51 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                         else {
                             self.set_operation_result(server_id, '失败');
                         }
-                        self.add_operation_result_log(id, standard_log, error_log);
+                        self.add_operation_result_log(id, this_standard_log, this_error_log);
                         renderForm();
                     });
                     break;
                 case '关服更新':
                 case '不关服更新':
                     self.last_server_update[id] = self.UPDATE.UPDATE_END;
-                    error_log += resdata[id]['error_out'];
-                    standard_log += resdata[id]['standard_out'];
-                    if (resdata[id]['error_out'] != '') {
+                    var this_standard_log = '';
+                    var this_error_log = '';
+                    for(idx in resdata[id]['standard_out']){
+                        this_standard_log += resdata[id]['standard_out'][idx];
+                    }
+                    for(idx in resdata[id]['error_out']){
+                        this_error_log += resdata[id]['error_out'][idx];
+                    }
+                    if (this_error_log != '') {
                         self.set_operation_result(id, '失败');
                     }
-                    else if (self.check_success_by_output(resdata[id]['standard_out']) === false) {
+                    else if (self.check_success_by_output(this_standard_log) === false) {
                         self.set_operation_result(id, '失败');
                     }
                     else {
                         self.set_operation_result(id, '成功');
                     }
-                    self.add_operation_result_log(id, standard_log, error_log);
+                    self.add_operation_result_log(id, this_standard_log, this_error_log);
                     renderForm();
                     break;
                 case '执行更新':
                     self.last_server_update[id] = self.UPDATE.UPDATEFILE_END;
                     var result = '';
-                    for (idx in resdata[id]) {
-                        error_log += 'idx\n';
-                        error_log += resdata[id][idx]['error_out'];
+                    var this_standard_log = '';
+                    var this_error_log = '';
+                    for (idx in resdata[id]['error_out']) {
+                        error_log += idx;
                         error_log += '\n';
-                        standard_log += 'idx\n';
-                        standard_log += resdata[id][idx]['standard_out'];
+                        error_log += resdata[id]['error_out'][idx];
+                        error_log += '\n';
+                        standard_log += idx;
                         standard_log += '\n';
-                        if (resdata[id][idx]['error_out'] != '') {
+                        standard_log += resdata[id]['standard_out'][idx];
+                        standard_log += '\n';
+                        if (resdata[id]['error_out'][idx] != '') {
                             result += idx + '更新失败';
                         }
-                        else if (self.check_success_by_output(resdata[id][idx]['standard_out']) === false) {
+                        else if (self.check_success_by_output(resdata[id]['standard_out'][idx]) === false) {
                             result += idx + '更新失败';
                         }
                         else {
