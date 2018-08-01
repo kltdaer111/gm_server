@@ -228,7 +228,7 @@
 				});
     	});
 
-			layui.use('form', 'layer', function(){
+			layui.use(['form','layer'], function(){
 				var form = layui.form;
 				var layer = layui.layer;
 				//监听提交
@@ -246,7 +246,7 @@
 						}
 						else{
 							addSelect(res.data.data.ip, res.data.data.port, res.data.data.user, res.data.res['LAST_INSERT_ID()']);
-							layer.msg("发送成功", {
+							layer.msg("提交成功", {
                                 icon: 6,
                                 time: 2000
                             });
@@ -264,7 +264,7 @@
 					}
 					send_msg_to_server(11, send_data, function(res){
 						console.log(res);
-						layer.msg("发送成功", {
+						layer.msg("提交成功", {
                                 icon: 6,
                                 time: 2000
                             });
@@ -281,7 +281,7 @@
 					}
 					send_msg_to_server(11, send_data, function(res){
 						console.log(res);
-						layer.msg("发送成功", {
+						layer.msg("提交成功", {
                                 icon: 6,
                                 time: 2000
                             });
@@ -299,7 +299,7 @@
 					}
 					send_msg_to_server(12, send_data, function(res){
 						console.log(res);
-						layer.msg("发送成功", {
+						layer.msg("提交成功", {
                                 icon: 6,
                                 time: 2000
                             });

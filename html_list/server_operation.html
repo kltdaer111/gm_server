@@ -646,6 +646,10 @@
       //监听【执行】按钮
       form.on('submit(exec)', function (data) {
         console.log(data);
+        if(tab_oper_server_status == undefined){
+          alert('尚未生成出服务器列表！');
+          return false;
+        }
         tab_oper_server_status.do_server_operation(data.field.operation);
         return false;
       });
@@ -657,8 +661,12 @@
       });
       //监听服务器更新【执行更新】按钮
       form.on('submit(tab_update_submitall)', function(data){
-        var res = {}
         console.log(data);
+        //如果灰态则不响应
+        if(data.elem.className == "layui-btn layui-btn-disabled"){
+          return false;
+        }
+        var res = {}
         for(let id = 1; id <= 4; id++){
           var label = '#tab_update_checkbox' + id;
           var text_id = 'tab_update_text' + id;
@@ -698,6 +706,10 @@
             res[text_id] = '';
           }
         }
+        if(tab_update_server_status == undefined){
+          alert('尚未生成出服务器列表！');
+          return false;
+        }
         tab_update_server_status.do_server_operation('执行更新', res);
         return false;
       });
@@ -705,6 +717,16 @@
       form.on('submit(tab_update_clearall)', function(data){
 
         return true;
+      });
+      //监听tab_global【执行】按钮
+      form.on('submit(tab_global_exec)', function (data) {
+        console.log(data);
+        if(tab_global_server_status == undefined){
+          alert('尚未生成出服务器列表！');
+          return false;
+        }
+        tab_global_server_status.do_server_operation(data.field.operation);
+        return false;
       });
       //监听tab_global【筛选】按钮
       form.on('submit(tab_global_filter)', function (data) {
@@ -777,6 +799,10 @@
       });
       //监听服务器拷贝【执行】按钮
       form.on('submit(tab_copy_exec)', function (data) {
+        if(tab_copy_server_status == undefined){
+          alert('尚未生成出服务器列表！');
+          return false;
+        }
         tab_copy_server_status.do_server_operation(data.field.tab_copy_operation, data);
         return false;
       });

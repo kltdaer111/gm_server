@@ -199,6 +199,10 @@ layui.use(['layer','form', 'layedit', 'laydate','element','table'], function(){
           send.file_name += '.tbls64';
         }
         console.log(send);
+        var res = confirm('确定要重载表格:' + send.file_name + '?');
+        if(res === false){
+          return false;
+        }
         $.ajax({
           type: "POST",
           url: '../php/sg_gm/reload_config.php',

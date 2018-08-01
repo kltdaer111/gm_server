@@ -21,20 +21,24 @@ function ServerStatusSuit(type, dom_id, server_data, group_name, check_interval,
     //标准结果
     this.standard_log = {};
     //标准结果按钮filter
-    this.standard_button_filter = this.dom_id + '_resultlog_standard'; 
+    this.standard_button_filter = this.dom_id + '_resultlog_standard';
     //错误结果按钮filter
-    this.error_button_filter = this.dom_id + '_resultlog_error'; 
+    this.error_button_filter = this.dom_id + '_resultlog_error';
     //
-    if(type == 'server'){
+    if (type == 'server') {
         this.server_names = this.LOCAL_SERVER;
     }
-    else if(type === 'global'){
+    else if (type === 'global') {
         this.server_names = this.GLOBAL_SERVER;
     }
-    else{
+    else {
         throw new Exception("Wrong ServerStatusSuit type");
     }
     this.layui = layui;
+    //全选按钮filter
+    this.chooseall_button_filter = this.dom_id + '_chooseall';
+    //全选状态state
+    this.chooseall_choose_state = false;
 }
 
 ServerStatusSuit.prototype.SERVER_STATE = {
@@ -136,7 +140,7 @@ ServerStatusSuit.prototype.generate_table = function () {
             <thead>\
               <tr>\
                 <th>\
-                  <button class="layui-btn">全选</button>\
+                  <button class="layui-btn" lay-submit id ="' + this.chooseall_button_filter + '" lay-filter="' + this.chooseall_button_filter + '">全选</button>\
                 </th>\
                 <th>服务器组</th>\
                 <th>服务器名称</th>\
@@ -177,6 +181,7 @@ ServerStatusSuit.prototype.generate_table = function () {
     }
     this.reg_checkbox_event();
     this.reg_result_log_button();
+    this.reg_chooseall_event();
     renderForm();
 }
 
@@ -302,6 +307,36 @@ ServerStatusSuit.prototype.stop_interval_check = function (server_id) {
     this.timer_id = 0;
 }
 
+ServerStatusSuit.prototype.reg_chooseall_event = function () {
+    var self = this;
+    this.layui.use(['form'], function () {
+        var form = self.layui.form;
+        var filter = 'submit(' + self.chooseall_button_filter + ')';
+        console.log(filter);
+        form.on(filter, function (data) {
+            console.log(data);
+            if (self.chooseall_choose_state === false) {
+                var my_filter = "[lay-filter='" + "checkbox_filter_" + self.dom_id + "']";
+                console.log(my_filter);
+                $(my_filter).prop('checked', true);
+                for (idx in self.effect_server_id) {
+                    self.server_checked[self.effect_server_id[idx]] = 1;
+                }
+                $('#' + self.chooseall_button_filter).text('全不选');
+            }
+            else{
+                $("[lay-filter='" + "checkbox_filter_" + self.dom_id + "']").prop('checked', false);
+                for (idx in self.server_checked) {
+                    self.server_checked[idx] = 0;
+                }
+                $('#' + self.chooseall_button_filter).text('全选');
+            }
+            self.chooseall_choose_state = !self.chooseall_choose_state;
+            renderForm();
+        });
+    });
+}
+
 ServerStatusSuit.prototype.reg_checkbox_event = function () {
     //监听checkbox
     var self = this;
@@ -325,27 +360,27 @@ ServerStatusSuit.prototype.set_operation_result = function (id, res) {
     $(label).text(res);
 }
 
-ServerStatusSuit.prototype.reg_result_log_button = function(){
+ServerStatusSuit.prototype.reg_result_log_button = function () {
     var self = this;
-    this.layui.use(['form', 'layer'], function(){
+    this.layui.use(['form', 'layer'], function () {
         var form = self.layui.form;
         var layer = self.layui.layer;
         var standard_filter = 'submit(' + self.standard_button_filter + ')';
         var error_filter = 'submit(' + self.error_button_filter + ')';
-        form.on(standard_filter, function(data){
+        form.on(standard_filter, function (data) {
             var log = self.standard_log[data.elem.id];
             layer.open({
-                title : '标准日志',
-                content : log,
-                area : '800px',
+                title: '标准日志',
+                content: log,
+                area: '800px',
             });
         });
-        form.on(error_filter, function(data){
+        form.on(error_filter, function (data) {
             var log = self.error_log[data.elem.id];
             layer.open({
-                title : '错误日志',
-                content : log,
-                area : '800px',
+                title: '错误日志',
+                content: log,
+                area: '800px',
             });
         });
         return false;
@@ -395,9 +430,9 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
         alert("请选择服务器!");
         return;
     }
-    else{
+    else {
         var res = confirm('你确定要对服务器' + str + '执行-' + oper + '-操作吗?');
-        if(res === false){
+        if (res === false) {
             return;
         }
     }
@@ -484,10 +519,10 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                     self.last_server_action[id] = self.ACTION.START_END;
                     var this_standard_log = '';
                     var this_error_log = '';
-                    for(idx in resdata[id]['standard_out']){
+                    for (idx in resdata[id]['standard_out']) {
                         this_standard_log += resdata[id]['standard_out'][idx];
                     }
-                    for(idx in resdata[id]['error_out']){
+                    for (idx in resdata[id]['error_out']) {
                         this_error_log += resdata[id]['error_out'][idx];
                     }
                     self.gen_server_states(id, function (server_id) {
@@ -506,12 +541,23 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                     self.last_server_action[id] = self.ACTION.SHUT_END;
                     var this_standard_log = '';
                     var this_error_log = '';
-                    for(idx in resdata[id]['standard_out']){
+                    for (idx in resdata[id]['standard_out']) {
                         this_standard_log += resdata[id]['standard_out'][idx];
                     }
-                    for(idx in resdata[id]['error_out']){
+                    for (idx in resdata[id]['error_out']) {
                         this_error_log += resdata[id]['error_out'][idx];
                     }
+
+                    // if (this_error_log != '') {
+                    //     self.set_operation_result(id, '失败');
+                    // }
+                    // else if (self.check_success_by_output(this_standard_log) === false) {
+                    //     self.set_operation_result(id, '失败');
+                    // }
+                    // else {
+                    //     self.set_operation_result(id, '成功');
+                    // }
+
                     self.gen_server_states(id, function (server_id) {
                         var server_state = self.all_server_states[server_id];
                         if (self.SHOW_STATE.CLOSED == self.judge_state_by_last_action_and_serverstate(self.ACTION.SHUT_END, server_state)) {
@@ -526,10 +572,10 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                     break;
                 case '重启服务器':
                     self.last_server_action[id] = self.ACTION.RESTART_START_END;
-                    for(idx in resdata[id]['standard_out']){
+                    for (idx in resdata[id]['standard_out']) {
                         this_standard_log += resdata[id]['standard_out'][idx];
                     }
-                    for(idx in resdata[id]['error_out']){
+                    for (idx in resdata[id]['error_out']) {
                         this_error_log += resdata[id]['error_out'][idx];
                     }
                     self.gen_server_states(id, function (server_id) {
@@ -549,10 +595,10 @@ ServerStatusSuit.prototype.do_server_operation = function (oper, data) {
                     self.last_server_update[id] = self.UPDATE.UPDATE_END;
                     var this_standard_log = '';
                     var this_error_log = '';
-                    for(idx in resdata[id]['standard_out']){
+                    for (idx in resdata[id]['standard_out']) {
                         this_standard_log += resdata[id]['standard_out'][idx];
                     }
-                    for(idx in resdata[id]['error_out']){
+                    for (idx in resdata[id]['error_out']) {
                         this_error_log += resdata[id]['error_out'][idx];
                     }
                     if (this_error_log != '') {

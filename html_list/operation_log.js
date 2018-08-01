@@ -107,10 +107,12 @@ OperationLogTab.prototype.initTab = function () {
             var end_id = self.server_group_data[data.value]['group_end_id'];
             var send_data = {
                 'start_id': start_id,
-                'end_id': end_id
+                'end_id': end_id,
+                server_type : 'server'
             };
             send_msg_to_server(1, send_data, function (res) {
                 console.log(res);
+                console.log(send_data);
                 self.resetSelectFormOfOperationServer();
                 for (idx in res) {
                     if (res[idx]['ip'] !== null) {
