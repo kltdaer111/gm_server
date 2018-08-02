@@ -731,11 +731,12 @@ function is_ip(value) {
 
 function rpc_call(controller, func, msg_data, call_back) {
 	var url = '../ci/index.php/' + controller + '/' + func;
+	console.log('post');
 	$.ajax({
 		type: "POST",
 		url: url,
 		dataType: "json",
-		data: JSON.stringify(msg_data),
+		data: msg_data,
 		success: function (res) {
 			if (call_back !== undefined) {
 				call_back(res);

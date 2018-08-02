@@ -135,9 +135,16 @@
 			form.on(filter, function (data) {
 				console.log(data);
 				//
+				if(self.query_func !== undefined){
+					self.query_func(postion_selector);
+				}
 				return false;
 			});
 		});
+	}
+
+	ThisInterface.prototype.regQueryFunc = function(query_func){
+		this.query_func = query_func;
 	}
 
 	ThisInterface.prototype.listenNew = function () {
@@ -151,10 +158,19 @@
 					return false;
 				}
 				//添加新标签
+				if(self.new_func !== undefined){
+					self.new_func();
+				}
 				return false;
 			});
 		});
 	}
+
+	ThisInterface.prototype.regNewFunc = function(new_func){
+		this.new_func = new_func;
+	}
+
+	
 
 	var interface_mark = new ThisInterface('tab_mark', layui);
 	interface_mark.init();
