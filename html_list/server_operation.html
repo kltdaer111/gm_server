@@ -109,6 +109,7 @@
     <div class="layui-tab layui-tab-card">
       <ul class="layui-tab-title">
         <li class="layui-this">服务器操作</li>
+        <li>全局服操作</li>
         <li>操作记录</li>
         <li>服务器拷贝</li>
         <li>拷贝记录</li>
@@ -126,7 +127,8 @@
                   <label class="layui-form-label">游戏</label>
                 </div>
                 <div class="layui-col-lg4">
-                  <select name="choose_game">
+                  <select name="choose_game" lay-filter="choose_game"
+                    id="tab_oper_choose_game" my-tab='oper'>
                     <option value="">请选择游戏</option>
                     <option value="0">少年逆命师</option>
                   </select>
@@ -137,7 +139,7 @@
                 </div>
 
                 <div class="layui-col-lg4">
-                  <select name="choose_server" id='group'>
+                  <select name="choose_server" id='tab_oper_choose_group' lay-verify="required">
                     <option value="">请选择服务器</option>
                   </select>
                 </div>
@@ -152,7 +154,7 @@
               <div class="layui-row">
 
                 <div class="layui-col-lg3 layui-col-md-offset1">
-                  <input type="radio" name="operation" value='开启服务器'
+                  <input type="radio" name="operation" value='开启服务器' checked
                     title='开启服务器'>
                 </div>
                 <div class="layui-col-lg3">
@@ -178,6 +180,73 @@
             </table>
           </div>
         </div>
+        <div class="layui-tab-item">
+          <!-- 全局服操作 -->
+          <div class="layui-fluid">
+            <form class="layui-form" action="">
+
+              <div class="layui-row">
+                <div class="layui-col-lg1">
+                  <label class="layui-form-label">游戏</label>
+                </div>
+                <div class="layui-col-lg4">
+                  <select name="choose_game" lay-filter="choose_game"
+                    id="tab_global_choose_game" my-tab='global'>
+                    <option value="">请选择游戏</option>
+                    <option value="0">少年逆命师</option>
+                  </select>
+                </div>
+
+                <div class="layui-col-lg1">
+                  <label class="layui-form-label">服务器组</label>
+                </div>
+
+                <div class="layui-col-lg4">
+                  <select name="tab_global_choose_group"
+                    id='tab_global_choose_group' lay-verify="required">
+                    <option value="">请选择服务器</option>
+                  </select>
+                </div>
+
+                <div class="layui-col-lg1 layui-col-md-offset1">
+                  <button class="layui-btn" lay-submit
+                    lay-filter='tab_global_filter'>筛选</button>
+                </div>
+              </div>
+              <div class="layui-row">
+                <div class="layui-input-block"></div>
+              </div>
+              <div class="layui-row">
+
+                <div class="layui-col-lg3 layui-col-md-offset1">
+                  <input type="radio" name="tab_global_operation" value='开启全局服'
+                    checked
+                    title='开启服务器'>
+                </div>
+                <div class="layui-col-lg3">
+                  <input type="radio" name="tab_global_operation" value='关闭全局服'
+                    title="关闭服务器">
+                </div>
+                <div class="layui-col-lg3">
+                  <input type="radio" name="tab_global_operation" value='重启全局服'
+                    title="重启服务器">
+                </div>
+
+                <div class="layui-col-lg1 layui-col-md-offset1">
+                  <button class="layui-btn" lay-submit
+                    lay-filter='tab_global_exec'>执行</button>
+                </div>
+              </div>
+            </form>
+            <table class="layui-table" id='tab_global_status'>
+              <!-- <colgroup>
+              <col width="150">
+              <col width="200">
+              <col>
+            </colgroup> -->
+            </table>
+          </div>
+        </div>
         <div class="layui-tab-item" id="tab_actionlog">
           <!-- 开关服日志 -->
 
@@ -192,7 +261,8 @@
                   <label class="layui-form-label">游戏</label>
                 </div>
                 <div class="layui-col-lg4">
-                  <select name="choose_game">
+                  <select name="choose_game" lay-filter="choose_game"
+                    id="tab_copy_choose_game" my-tab='copy'>
                     <option value="">请选择游戏</option>
                     <option value="0">少年逆命师</option>
                   </select>
@@ -233,7 +303,7 @@
                 </div>
 
                 <div class="layui-col-lg4">
-                  <select name="tab_copy_choose_group"
+                  <select name="tab_copy_choose_group" lay-verify="required"
                     id='tab_copy_choose_group'>
                     <option value="">请选择服务器组</option>
                   </select>
@@ -252,6 +322,7 @@
               <div class="layui-row">
                 <div class="layui-col-lg3 layui-col-md-offset1">
                   <input type="radio" name="tab_copy_operation" value='关服更新'
+                    checked
                     title='关服更新'>
                 </div>
                 <div class="layui-col-lg1">
@@ -402,7 +473,8 @@
                 <label class="layui-form-label">游戏</label>
               </div>
               <div class="layui-col-lg4">
-                <select name="tab_update_choosegame">
+                <select name="tab_update_choosegame" lay-filter="choose_game"
+                  id="tab_update_choose_game" my-tab='update'>
                   <option value="">请选择游戏</option>
                   <option value="0">少年逆命师</option>
                 </select>
@@ -413,8 +485,8 @@
               </div>
 
               <div class="layui-col-lg4">
-                <select name="tab_update_choosegroup"
-                  id='tab_update_choosegroup'>
+                <select name="tab_update_choose_group" lay-verify="required"
+                  id='tab_update_choose_group'>
                   <option value="">请选择服务器组</option>
                 </select>
               </div>
@@ -466,7 +538,7 @@
       renderForm();
     }
 
-    var tab_oper_server_status, tab_copy_server_status, tab_update_server_status;
+    var tab_oper_server_status, tab_copy_server_status, tab_update_server_status, tab_global_server_status;
 
     var tab_actionlog = new OperationLogTab('tab_actionlog', layui);
     tab_actionlog.RegType('开启服务器');
@@ -525,6 +597,19 @@
       var laydate = layui.laydate;
       var form = layui.form;
       var layer = layui.layer;
+      //监听选择游戏
+      form.on('select(choose_game)', function(data){
+        console.log(data);
+        var id = data.elem.id;
+        var tab_name = $('#' + id).attr('my-tab');
+        console.log(tab_name);
+        var label = '#tab_' + tab_name + '_choose_group';
+        $(label).empty();
+        for (name in server_group_data) {
+          $(label).append("<option value='" + name + "'>" + name + "</option>");
+        }
+        renderForm();
+      });
       //监听tab_update【提交】按钮
       form.on('submit(tab_update_submit)', function (data) {
         var id = data.elem.id.charAt(data.elem.id.length - 1);
@@ -535,8 +620,6 @@
         if(input == ''){
           return false;
         }
-        //TODO参数检查
-        
 
         input = input.replace(';', '<br>');
         layer.confirm(input, {
@@ -563,6 +646,10 @@
       //监听【执行】按钮
       form.on('submit(exec)', function (data) {
         console.log(data);
+        if(tab_oper_server_status == undefined){
+          alert('尚未生成出服务器列表！');
+          return false;
+        }
         tab_oper_server_status.do_server_operation(data.field.operation);
         return false;
       });
@@ -574,6 +661,11 @@
       });
       //监听服务器更新【执行更新】按钮
       form.on('submit(tab_update_submitall)', function(data){
+        console.log(data);
+        //如果灰态则不响应
+        if(data.elem.className == "layui-btn layui-btn-disabled"){
+          return false;
+        }
         var res = {}
         for(let id = 1; id <= 4; id++){
           var label = '#tab_update_checkbox' + id;
@@ -599,18 +691,24 @@
                   alert('不可输入文件夹；文件名请输入后缀');
                   return false;
                 }
+                res[text_id] = code_input;
               }
               //all换成.
               else{
                 code_input = '.';
-              }
-              
+              }       
             }
-            res[text_id] = code_input;
+            else{
+              res[text_id] = data.field[text_id];
+            }
           }
           else{
             res[text_id] = '';
           }
+        }
+        if(tab_update_server_status == undefined){
+          alert('尚未生成出服务器列表！');
+          return false;
         }
         tab_update_server_status.do_server_operation('执行更新', res);
         return false;
@@ -620,6 +718,39 @@
 
         return true;
       });
+      //监听tab_global【执行】按钮
+      form.on('submit(tab_global_exec)', function (data) {
+        console.log(data);
+        if(tab_global_server_status == undefined){
+          alert('尚未生成出服务器列表！');
+          return false;
+        }
+        tab_global_server_status.do_server_operation(data.field.operation);
+        return false;
+      });
+      //监听tab_global【筛选】按钮
+      form.on('submit(tab_global_filter)', function (data) {
+        console.log(data);
+        console.log(server_group_data);
+        if (tab_global_server_status !== undefined) {
+          tab_global_server_status.stop_interval_check();
+        }
+        var group_name = data.field.tab_global_choose_group;
+        var start_id = server_group_data[group_name]['global_start_id'];
+        var end_id = server_group_data[group_name]['global_end_id'];
+        var send_data = {
+          'start_id': start_id,
+          'end_id': end_id,
+          'server_type': 'global',
+        };
+        send_msg_to_server(1, send_data, function (res) {
+          console.log(res);
+          tab_global_server_status = new ServerStatusSuit('global', 'tab_global_status', res, group_name, 10000, layui);
+          tab_global_server_status.generate_table();
+          tab_global_server_status.start_interval_check();
+        });
+        return false;
+      });
       //监听tab_update【筛选】按钮
       form.on('submit(tab_update_filter)', function (data) {
         console.log(data);
@@ -627,16 +758,17 @@
         if (tab_update_server_status !== undefined) {
           tab_update_server_status.stop_interval_check();
         }
-        var group_name = data.field.tab_update_choosegroup;
+        var group_name = data.field.tab_update_choose_group;
         var start_id = server_group_data[group_name]['group_start_id'];
         var end_id = server_group_data[group_name]['group_end_id'];
         var send_data = {
           'start_id': start_id,
-          'end_id': end_id
+          'end_id': end_id,
+          'server_type': 'server',
         };
         send_msg_to_server(1, send_data, function (res) {
           console.log(res);
-          tab_update_server_status = new ServerStatusSuit('tab_update_status', res, group_name, 10000, layui);
+          tab_update_server_status = new ServerStatusSuit('server', 'tab_update_status', res, group_name, 10000, layui);
           tab_update_server_status.generate_table();
           tab_update_server_status.start_interval_check();
         });
@@ -654,11 +786,12 @@
         var end_id = server_group_data[group_name]['group_end_id'];
         var send_data = {
           'start_id': start_id,
-          'end_id': end_id
+          'end_id': end_id,
+          'server_type': 'server'
         };
         send_msg_to_server(1, send_data, function (res) {
           console.log(res);
-          tab_copy_server_status = new ServerStatusSuit('tab_copy_status', res, group_name, 10000, layui);
+          tab_copy_server_status = new ServerStatusSuit('server', 'tab_copy_status', res, group_name, 10000, layui);
           tab_copy_server_status.generate_table();
           tab_copy_server_status.start_interval_check();
         });
@@ -666,6 +799,10 @@
       });
       //监听服务器拷贝【执行】按钮
       form.on('submit(tab_copy_exec)', function (data) {
+        if(tab_copy_server_status == undefined){
+          alert('尚未生成出服务器列表！');
+          return false;
+        }
         tab_copy_server_status.do_server_operation(data.field.tab_copy_operation, data);
         return false;
       });
@@ -681,11 +818,12 @@
         var end_id = server_group_data[group_name]['group_end_id'];
         var send_data = {
           'start_id': start_id,
-          'end_id': end_id
+          'end_id': end_id,
+          'server_type': 'server',
         };
         send_msg_to_server(1, send_data, function (res) {
           console.log(res);
-          tab_oper_server_status = new ServerStatusSuit('tab_oper_status', res, group_name, 5000, layui);
+          tab_oper_server_status = new ServerStatusSuit('server', 'tab_oper_status', res, group_name, 5000, layui);
           tab_oper_server_status.generate_table();
           tab_oper_server_status.start_interval_check();
         });
@@ -735,9 +873,10 @@
       get_need_info_and_callback_it('sg_gm', data, function (res) {
         console.log(res);
         for (idx in res) {
-          $('#group').append("<option value='" + res[idx]['group_name'] + "'>" + res[idx]['group_name'] + "</option>");
-          $('#tab_copy_choose_group').append("<option value='" + res[idx]['group_name'] + "'>" + res[idx]['group_name'] + "</option>");
-          $('#tab_update_choosegroup').append("<option value='" + res[idx]['group_name'] + "'>" + res[idx]['group_name'] + "</option>");
+          // $('#tab_oper_choose_group').append("<option value='" + res[idx]['group_name'] + "'>" + res[idx]['group_name'] + "</option>");
+          // $('#tab_copy_choose_group').append("<option value='" + res[idx]['group_name'] + "'>" + res[idx]['group_name'] + "</option>");
+          // $('#tab_update_choose_group').append("<option value='" + res[idx]['group_name'] + "'>" + res[idx]['group_name'] + "</option>");
+          // $('#tab_global_choose_group').append("<option value='" + res[idx]['group_name'] + "'>" + res[idx]['group_name'] + "</option>");
           server_group_data[res[idx]['group_name']] = res[idx];
         }
         renderForm();

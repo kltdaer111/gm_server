@@ -177,6 +177,7 @@ function send_msg_to_server(msg_id, msg_data, call_back)
       console.log('1111111111122222');
       console.log('ERROR:' + msg_id + msg_data);
       console.log(err);
+      alert('操作失败');
     }
   });
 }

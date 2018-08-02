@@ -9,7 +9,7 @@ $msg_data = json_decode($_POST['msg_data'], true);
 
 function get_ssh_need_info($db_con, $server_id)
 {
-	$sql = "SELECT gm_server_list.server_id,server_name,server_ssh.ip,ssh_port,username,passwd,location FROM gm_server_list LEFT OUTER JOIN server_ssh ON gm_server_list.server_id=server_ssh.server_id WHERE gm_server_list.server_id={$server_id}";
+	$sql = "SELECT server_id, ip, port, username, passwd, location FROM ssh_user LEFT OUTER JOIN server_ssh ON ssh_user.id=server_ssh.ssh_id WHERE server_id={$server_id}";
 	$result = $db_con->query($sql);
 	if ($result == false) {
 		throw new Exception("QUERY FAILED:" . $sql . $db_con->error);
@@ -21,13 +21,29 @@ function get_ssh_need_info($db_con, $server_id)
 	return $data;
 }
 
-function update_last_server_action($db_con, $server_id, $action_id, $type)
+function update_last_server_action($db_con, $server_id, $action_id, $type, $server_type = 'server')
 {
-	$sql = "UPDATE server_action SET last_server_action={$action_id} WHERE server_id={$server_id} AND type='{$type}';";
+	$sql = "UPDATE server_action SET last_server_action={$action_id} WHERE server_id={$server_id} AND type='{$type}' AND server_type='{$server_type}';";
 	$result = $db_con->query($sql);
 	if ($result == false) {
 		throw new Exception("QUERY FAILED:" . $sql . $db_con->error);
 	}
+}
+
+function response($code, $data)
+{
+	$res = array();
+	$res['code'] = $code;
+	$res['data'] = $data;
+	echo json_encode($res);
+}
+
+function get_log_struct()
+{
+	$log = array();
+	$log['error_out'] = array();
+	$log['standard_out'] = array();
+	return $log;
 }
 
 switch ($msg_id) {
@@ -37,8 +53,11 @@ switch ($msg_id) {
 			if ($db_con->connect_errno) {
 				throw new Exception("NO DB CONNECTION " . $db_con->connect_error);
 			}
-			$sql = "SELECT gm_server_list.server_id,server_name,server_ssh.ip,username,location,last_server_action FROM gm_server_list LEFT OUTER JOIN server_ssh ON gm_server_list.server_id=server_ssh.server_id LEFT OUTER JOIN server_action ON gm_server_list.server_id=server_action.server_id WHERE gm_server_list.server_id >= {$msg_data['start_id']} AND gm_server_list.server_id <= {$msg_data['end_id']};";
+			$sql = "SELECT server_ssh.server_id, server_ssh.server_type, gm_server_list.ip, gm_server_list.server_name, location, last_server_action FROM server_ssh LEFT OUTER JOIN gm_server_list ON gm_server_list.server_id=server_ssh.server_id LEFT OUTER JOIN server_action ON gm_server_list.server_id=server_action.server_id AND server_action.type='action' WHERE server_ssh.server_id >= {$msg_data['start_id']} AND server_ssh.server_id <= {$msg_data['end_id']} AND server_ssh.server_type = '{$msg_data['server_type']}';";
 			$result = $db_con->query($sql);
+			if ($result == false) {
+				throw new Exception("QUERY FAILED:" . $sql . $db_con->error);
+			}
 			$result_array = array();
 			while ($array_data = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
 				array_push($result_array, $array_data);
@@ -59,7 +78,7 @@ switch ($msg_id) {
 					$data = get_ssh_need_info($db_con, $server_id);
 					// log_debug(print_r($data, true));
 					$ip = $data['ip'];
-					$port = $data['ssh_port'];
+					$port = $data['port'];
 					$user = $data['username'];
 					$passwd = $data['passwd'];
 					$location = $data['location'];
@@ -70,31 +89,66 @@ switch ($msg_id) {
 							update_last_server_action($db_con, $server_id, 3, 'action');
 							$cmd = 'sh ' . $location . '/run.sh -y';
 							// log_debug($cmd);
-							$result_string = $ssh2_obj->sync_operation($cmd);
-							$res[$server_id] = $result_string;
+							$res[$server_id] = array();
+							$return_array = $ssh2_obj->sync_oper($cmd);
+							$res[$server_id]['standard_out'] = array();
+							$res[$server_id]['standard_out']['open_server'] = $return_array[0];
+							$res[$server_id]['error_out'] = array();
+							$res[$server_id]['error_out']['open'] = $return_array[1];
 							update_last_server_action($db_con, $server_id, 4, 'action');
+							break;
+						case '开启全局服':
+							$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
+							update_last_server_action($db_con, $server_id, 3, 'action');
+							$cmd = 'sh ' . $location . '/run.sh -gy';
+							// log_debug($cmd);
+							$res[$server_id] = array();
+							$return_array = $ssh2_obj->sync_oper($cmd);
+							$res[$server_id]['standard_out'] = array();
+							$res[$server_id]['standard_out']['open_global'] = $return_array[0];
+							$res[$server_id]['error_out'] = array();
+							$res[$server_id]['error_out']['open_global'] = $return_array[1];
+							update_last_server_action($db_con, $server_id, 4, 'action', 'global');
 							break;
 						case '关闭服务器':
 							$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
 							update_last_server_action($db_con, $server_id, 1, 'action');
 							$cmd = 'sh ' . $location . '/stop.sh -y';
-							$result_string = $ssh2_obj->sync_operation($cmd);
-							// log_debug($cmd);
-							$res[$server_id] = $result_string;
+							$res[$server_id] = array();
+							$return_array = $ssh2_obj->sync_oper($cmd);
+							$res[$server_id]['standard_out'] = array();
+							$res[$server_id]['standard_out']['shut_server'] = $return_array[0];
+							$res[$server_id]['error_out'] = array();
+							$res[$server_id]['error_out']['shut_server'] = $return_array[1];
 							update_last_server_action($db_con, $server_id, 2, 'action');
+							break;
+						case '关闭全局服':
+							$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
+							update_last_server_action($db_con, $server_id, 1, 'action');
+							$cmd = 'sh ' . $location . '/stop.sh -gy';
+							$res[$server_id] = array();
+							$return_array = $ssh2_obj->sync_oper($cmd);
+							$res[$server_id]['standard_out'] = array();
+							$res[$server_id]['standard_out']['shut_global'] = $return_array[0];
+							$res[$server_id]['error_out'] = array();
+							$res[$server_id]['error_out']['shut_global'] = $return_array[1];
+							update_last_server_action($db_con, $server_id, 2, 'action', 'global');
 							break;
 						case '重启服务器':
 							$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
 							update_last_server_action($db_con, $server_id, 5, 'action');
 							$cmd = 'sh ' . $location . '/stop.sh -y';
-							// log_debug($cmd);
-							$result_string = $ssh2_obj->sync_operation($cmd);
-							$res[$server_id]['stop'] = $result_string;
+							$res[$server_id] = array();
+							$return_array = $ssh2_obj->sync_oper($cmd);
+							$res[$server_id]['standard_out'] = array();
+							$res[$server_id]['standard_out']['shut_server'] = $return_array[0];
+							$res[$server_id]['error_out'] = array();
+							$res[$server_id]['error_out']['shut_server'] = $return_array[1];
 							update_last_server_action($db_con, $server_id, 7, 'action');
 							$cmd = 'sh ' . $location . '/run.sh -y';
-							// log_debug($cmd);
-							$result_string = $ssh2_obj->sync_operation($cmd);
-							$res[$server_id]['start'] = $result_string;
+							$return_array = $ssh2_obj->sync_oper($cmd);
+							$res[$server_id]['standard_out']['open'] = $return_array[0];
+							$res[$server_id]['error_out']['open'] = $return_array[1];
 							update_last_server_action($db_con, $server_id, 8, 'action');
 							break;
 						case '关服更新':
@@ -102,13 +156,10 @@ switch ($msg_id) {
 							$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
 							update_last_server_action($db_con, $server_id, 1, 'action');
 							$cmd = 'sh ' . $location . '/stop.sh -y';
-							// log_debug(__LINE__);
-							// log_debug($cmd);
-							$result_string = $ssh2_obj->sync_operation($cmd);
-							// log_debug(__LINE__);
-							// log_debug($result_string);
-							// log_debug($cmd);
-							//$res[$server_id] = $result_string;
+							$res[$server_id] = array();
+							$return_array = $ssh2_obj->sync_oper($cmd);
+							// $res[$server_id]['standard_out'] = $return_array[0];
+							// $res[$server_id]['error_out'] = $return_array[1];
 							update_last_server_action($db_con, $server_id, 2, 'action');
 						//再更新
 						case '不关服更新':
@@ -125,8 +176,10 @@ switch ($msg_id) {
 									$res[$server_id]['modify'] = $this_obj->sync_operation('cd ~/sg_server/sh && sh modify_version.sh ' . $server_version);
 									// log_debug($res[$server_id]['modify']);
 									$this_obj->sync_operation("cd ~/sg_server/nohup_run && yes Yes | sh copy.sh {$ip} {$user} all 1>{$standard_output} 2>{$error_output}");
-									$res[$server_id]['standard_out'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/{$standard_output}");
-									$res[$server_id]['error_out'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/{$error_output}");
+									$res[$server_id]['standard_out'] = array();
+									$res[$server_id]['error_out'] = array();
+									$res[$server_id]['standard_out']['copy'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/{$standard_output}");
+									$res[$server_id]['error_out']['copy'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/{$error_output}");
 									// log_debug($res[$server_id]['standard_out']);
 									// log_debug($res[$server_id]['error_out']);
 									break;
@@ -134,8 +187,10 @@ switch ($msg_id) {
 									$this_obj = new SSH2Obj('192.168.1.5', 22, 'nei', 'nei');
 									$this_obj->sync_operation('cd ~/sg_server/nohup_run');
 									$this_obj->sync_operation("cd ~/sg_server/nohup_run && yes Yes | sh copy.sh {$ip} {$user} all 1>{$standard_output} 2>{$error_output}");
-									$res[$server_id]['standard_out'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/{$standard_output}");
-									$res[$server_id]['error_out'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/{$error_output}");
+									$res[$server_id]['standard_out'] = array();
+									$res[$server_id]['error_out'] = array();
+									$res[$server_id]['standard_out']['copy'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/{$standard_output}");
+									$res[$server_id]['error_out']['copy'] = $this_obj->sync_operation("cat ~/sg_server/nohup_run/{$error_output}");
 									// log_debug($res[$server_id]['standard_out']);
 									// log_debug($res[$server_id]['error_out']);
 									break;
@@ -146,6 +201,8 @@ switch ($msg_id) {
 						case '执行更新':
 							update_last_server_action($db_con, $server_id, 3, 'update');
 							$ssh2_obj = new SSH2Obj($ip, $port, $user, $passwd);
+							$res[$server_id]['standard_out'] = array();
+							$res[$server_id]['error_out'] = array();
 							if ($msg_data['code'] !== '') {
 								$extra_data .= 'code:';
 								$extra_data .= $msg_data['code'];
@@ -157,53 +214,49 @@ switch ($msg_id) {
 								}
 								$cmd .= ' && make -j11';
 								$return_array = $ssh2_obj->sync_oper($cmd);
-								$res[$server_id]['code'] = array();
-								$res[$server_id]['code']['standard_out'] = $return_array[0];
-								$res[$server_id]['code']['error_out'] = $return_array[1];
+								$res[$server_id]['standard_out']['code'] = $return_array[0];
+								$res[$server_id]['error_out']['code'] = $return_array[1];
 								$extra_data .= ',';
 							}
 							if ($msg_data['map'] !== '') {
 								$extra_data .= 'map:';
 								$extra_data .= $msg_data['map'];
 								$pieces = explode(';', $msg_data['map']);
-								$res[$server_id]['map'] = array('standard_out' => '', 'error_out' => '');
 								$standard_out = '';
 								$error_out = '';
 								foreach ($pieces as $file) {
 									$cmd = "cd {$location}/../trunk && sh update.sh map {$file}";
 									$return_array = $ssh2_obj->sync_oper($cmd);
 									$standard_out .= $return_array[0];
-									$standard_out .= ',';
+									//$standard_out .= ',';
 									$error_out .= $return_array[1];
-									$error_out .= ',';
+									//$error_out .= ',';
 								}
-								$res[$server_id]['map']['standard_out'] .= substr($standard_out, 0, strlen($standard_out) - 1);
-								$res[$server_id]['map']['error_out'] = substr($error_out, 0, strlen($error_out) - 1);
+								$res[$server_id]['standard_out']['map'] = substr($standard_out, 0, strlen($standard_out) - 1);
+								$res[$server_id]['error_out']['map'] = substr($error_out, 0, strlen($error_out) - 1);
 							}
 							if ($msg_data['lua'] !== '') {
 								$extra_data .= 'lua:';
 								$extra_data .= $msg_data['lua'];
 								$extra_data .= ',';
 								$pieces = explode(';', $msg_data['lua']);
-								$res[$server_id]['lua'] = array('standard_out' => '', 'error_out' => '');
 								$standard_out = '';
 								$error_out = '';
 								foreach ($pieces as $file) {
 									$cmd = "cd {$location}/../trunk && sh update.sh lua {$file}";
 									$return_array = $ssh2_obj->sync_oper($cmd);
 									$standard_out .= $return_array[0];
-									$standard_out .= ',';
+									//$standard_out .= ',';
 									$error_out .= $return_array[1];
-									$error_out .= ',';
+									//$error_out .= ',';
 								}
-								$res[$server_id]['lua']['standard_out'] .= substr($standard_out, 0, strlen($standard_out) - 1);
-								$res[$server_id]['lua']['error_out'] = substr($error_out, 0, strlen($error_out) - 1);
+								$res[$server_id]['standard_out']['lua'] = substr($standard_out, 0, strlen($standard_out) - 1);
+								$res[$server_id]['error_out']['lua'] = substr($error_out, 0, strlen($error_out) - 1);
 							}
 							if ($msg_data['tbl'] !== '') {
 								$extra_data .= 'tbl:';
 								$extra_data .= $msg_data['tbl'];
 								$pieces = explode(';', $msg_data['tbl']);
-								$res[$server_id]['tbl'] = array('standard_out' => '', 'error_out' => '');
 								$standard_out = '';
 								$error_out = '';
 								foreach ($pieces as $file) {
@@ -211,19 +264,20 @@ switch ($msg_id) {
 									$return_array = $ssh2_obj->sync_oper($cmd);
 									log_debug($cmd);
 									$standard_out .= $return_array[0];
-									$standard_out .= ',';
+									//$standard_out .= ',';
 									$error_out .= $return_array[1];
-									$error_out .= ',';
+									//$error_out .= ',';
 								}
-								$res[$server_id]['tbl']['standard_out'] .= substr($standard_out, 0, strlen($standard_out) - 1);
-								$res[$server_id]['tbl']['error_out'] = substr($error_out, 0, strlen($error_out) - 1);
+								$res[$server_id]['standard_out']['tbl'] = substr($standard_out, 0, strlen($standard_out) - 1);
+								$res[$server_id]['error_out']['tbl'] = substr($error_out, 0, strlen($error_out) - 1);
 							}
 							update_last_server_action($db_con, $server_id, 4, 'update');
 							break;
 					}
 					//添加日志
-
-					$sql = "INSERT INTO server_operation_log SET server_id={$server_id},operation_type='{$msg_data['oper']}',operation_user='{$msg_data['user']}',operation_date=FROM_UNIXTIME({$now}),extra_data='{$extra_data}';";
+					$str_log = mysqli_real_escape_string($db_con, json_encode($res[$server_id]));
+					log_debug($str_log);
+					$sql = "INSERT INTO server_operation_log SET server_id={$server_id},operation_type='{$msg_data['oper']}',operation_user='{$msg_data['user']}',operation_date=FROM_UNIXTIME({$now}),extra_data='{$extra_data}', log='{$str_log}';";
 					$result = $db_con->query($sql);
 					if ($result == false) {
 						throw new Exception("QUERY FAILED:" . $sql . $db_con->error);
@@ -240,7 +294,7 @@ switch ($msg_id) {
 			$data = get_ssh_need_info($db_con, $msg_data);
 			// log_debug(print_r($data, true));
 			$ip = $data['ip'];
-			$port = $data['ssh_port'];
+			$port = $data['port'];
 			$user = $data['username'];
 			$passwd = $data['passwd'];
 			$location = $data['location'];
@@ -335,8 +389,46 @@ switch ($msg_id) {
 			while ($array_data = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
 				array_push($result_array, $array_data);
 			}
+
+
+
+			/********************** */
+			$date = $msg_data['date'];
+			$type = 'task';
+			$db_con = get_connect('sg_log', 1);
+			if ($db_con->connect_errno) {
+				throw new Exception("NO DB CONNECTION " . $db_con->connect_error);
+			}
+			$sql = "SELECT data FROM daily_statistics_log WHERE date='{$date}' AND type='{$type}'";
+			$result = $db_con->query($sql);
+			if ($result == false) {
+				throw new Exception("QUERY FAILED:" . $sql . $db_con->error);
+			}
+			//$result_array = array();
+			$choose = 1;
+			$id = 0;
+			//$result_array = array();
+			$file = fopen('../../tmp/tmp.txt', 'w');
+			$array_data = mysqli_fetch_array($result, MYSQLI_ASSOC);
+				//array_push($result_array, $array_data);
+			$obj = json_decode($array_data['data']);
+			foreach ($obj as $row) {
+				foreach ($row as $col) {
+					$col = mb_convert_encoding($col, 'CP936', 'UTF-8');
+					fwrite($file, $col);
+					fwrite($file, "\t");
+				}
+				fwrite($file, "\n");
+			}
+
+			/********************** */
+
+
 			echo json_encode($result_array);
 		}
+		break;
+	case 77:
+
 		break;
 	//对指定ssh执行指定命令，并返回结果
 	case 8:
@@ -349,7 +441,7 @@ switch ($msg_id) {
 			if ($db_con->connect_errno) {
 				throw new Exception("NO DB CONNECTION " . $db_con->connect_error);
 			}
-			$sql = "SELECT passwd FROM server_ssh WHERE ip='{$ip}' AND username='{$user}';";
+			$sql = "SELECT passwd FROM ssh_user WHERE ip='{$ip}' AND username='{$user}';";
 			$result = $db_con->query($sql);
 			if ($result == false) {
 				throw new Exception("QUERY FAILED:" . $sql . $db_con->error);
@@ -364,10 +456,79 @@ switch ($msg_id) {
 			echo json_encode($ssh2_obj->sync_operation($cmd));
 		}
 		break;
-	//更新服务器
+	//添加ssh用户
 	case 9:
 		{
+			$db_con = get_connect('sg_gm');
+			if ($db_con->connect_errno) {
+				throw new Exception("NO DB CONNECTION " . $db_con->connect_error);
+			}
+			$sql = "INSERT INTO ssh_user VALUES(DEFAULT, '{$msg_data['ip']}', {$msg_data['port']}, '{$msg_data['user']}', '{$msg_data['passwd']}');SELECT LAST_INSERT_ID();";
+			//multi_query过程
+			$bool_res = $db_con->multi_query($sql);
+			if ($bool_res == false) {
+				throw new Exception("QUERY FAILED:" . $sql . $db_con->error);
+			}
+			if ($db_con->next_result() === false) {
+				throw new Exception("QUERY FAILED:" . $sql . $db_con->error);
+			}
+			$result = $db_con->store_result();
+			if ($result === false) {
+				throw new Exception("QUERY FAILED:" . $sql . $db_con->error);
+			}
+			$res = mysqli_fetch_array($result, MYSQLI_ASSOC);
+			response(200, array('res' => $res, 'data' => $msg_data));
+		}
+		break;
+	//test
+	case 10:
+		{
+			$db_con = get_connect('sg_gm');
+			if ($db_con->connect_errno) {
+				throw new Exception("NO DB CONNECTION " . $db_con->connect_error);
+			}
+			$sql = "SELECT id,ip,port,username FROM ssh_user;";
+			$result = $db_con->query($sql);
+			if ($result == false) {
+				throw new Exception("QUERY FAILED:" . $sql . $db_con->error);
+			}
+			$result_array = array();
+			while ($array_data = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+				array_push($result_array, $array_data);
+			}
+			response(200, $result_array);
+		}
+		break;
+	case 11:
+		{
+			//插入服务器配置
+			$db_con = get_connect('sg_gm');
+			if ($db_con->connect_errno) {
+				throw new Exception("NO DB CONNECTION " . $db_con->connect_error);
+			}
+			$sql1 = "INSERT INTO server_ssh VALUES({$msg_data['server_id']}, '{$msg_data['server_type']}', {$msg_data['ssh_id']}, '{$msg_data['location']}');";
+			$sql2 = "INSERT INTO server_action VALUES({$msg_data['server_id']}, '{$msg_data['server_type']}', 'action', 2);";
+			$sql3 = "INSERT INTO server_action VALUES({$msg_data['server_id']}, '{$msg_data['server_type']}', 'update', 4);";
+			$result = $db_con->multi_query($sql1 . $sql2 . $sql3);
+			if ($result == false) {
+				throw new Exception("QUERY FAILED:" . $sql . $db_con->error);
+			}
 
+			response(200);
+		}
+		break;
+	case 12:
+		{
+			$db_con = get_connect('sg_gm');
+			if ($db_con->connect_errno) {
+				throw new Exception("NO DB CONNECTION " . $db_con->connect_error);
+			}
+			$sql = "INSERT INTO server_group VALUES('{$msg_data['name']}', {$msg_data['server_start']}, {$msg_data['server_end']}, {$msg_data['global_start']}, {$msg_data['global_end']});";
+			$result = $db_con->query($sql);
+			if ($result == false) {
+				throw new Exception("QUERY FAILED:" . $sql . $db_con->error);
+			}
+			response(200);
 		}
 		break;
 	default:

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>配置数据插入</title>
+		<link rel="stylesheet" type="text/css"
+			href="../dep/static/h-ui/css/H-ui.min.css" />
+		<link rel="stylesheet" type="text/css"
+			href="../dep/static/h-ui.admin/css/H-ui.admin.css" />
+		<link rel="stylesheet" type="text/css"
+			href="../dep/lib/Hui-iconfont/1.0.8/iconfont.css" />
+		<link rel="stylesheet" type="text/css"
+			href="../dep/static/h-ui.admin/skin/default/skin.css" id="skin" />
+		<link rel="stylesheet" type="text/css"
+			href="../dep/static/h-ui.admin/css/style.css" />
+		<link rel="stylesheet" type="text/css"
+			href="../dep/lib/layui/css/layui.css" />
+		<script type="text/javascript"
+			src="../dep/lib/jquery/1.9.1/jquery.min.js"></script>
+		<script type="text/javascript" src="../dep/static/h-ui/js/H-ui.min.js"></script>
+		<script type="text/javascript"
+			src="../dep/static/h-ui.admin/js/H-ui.admin.js"></script>
+		<script type="text/javascript"
+			src="../dep/lib/My97DatePicker/4.8/WdatePicker.js"></script>
+		<script type="text/javascript"
+			src="../dep/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" src="../dep/lib/layui/layui.js"
+			charset="utf-8"></script>
+		<script type="text/javascript" src="../dep/js/server_list_common.js"
+			charset="utf-8"></script>
+		<script type="text/javascript" src="../dep/js/common.js"
+			charset="utf-8"></script>
+		<script type="text/javascript"
+			src="../dep/lib/hcharts/Highcharts/5.0.6/js/highcharts.js"></script>
+		<script type="text/javascript"
+			src="../dep/lib/hcharts/Highcharts/5.0.6/js/modules/exporting.js"></script>
+		<script type="text/javascript" src="../dep/js/config.js"
+			charset="utf-8"></script>
+	</head>
+	<body>
+
+		<fieldset class="layui-elem-field layui-field-title">
+			<legend>添加ssh用户</legend>
+			<div class="layui-field-box">
+				<form class="layui-form" action="">
+					<div class="layui-form-item">
+						<label class="layui-form-label">IP</label>
+						<div class="layui-input-block">
+							<input type="text" name="ssh_ip" required lay-verify="required"
+								placeholder="请输入IP" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">端口</label>
+						<div class="layui-input-block">
+							<input type="text" name="ssh_port" required lay-verify="required"
+								placeholder="请输入端口，默认22" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">用户名</label>
+						<div class="layui-input-block">
+							<input type="text" name="ssh_user" required lay-verify="required"
+								placeholder="请输入用户名" autocomplete="on" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">密码</label>
+						<div class="layui-input-block">
+							<input type="text" name="ssh_passwd" required lay-verify="required"
+								placeholder="请输入密码" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-input-block">
+							<button class="layui-btn" lay-submit lay-filter="form_ssh_user">立即提交</button>
+							<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</fieldset>
+
+		<fieldset class="layui-elem-field layui-field-title">
+			<legend>添加服务器组</legend>
+			<div class="layui-field-box">
+				<form class="layui-form" action="">
+					<div class="layui-form-item">
+						<label class="layui-form-label">服务器组名</label>
+						<div class="layui-input-block">
+							<input type="text" name="group_name" required lay-verify="required"
+								placeholder="请编个名字" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">单服起始ID</label>
+						<div class="layui-input-block">
+							<input type="text" name="server_start" required lay-verify="required"
+								placeholder=""
+								autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">单服截止ID</label>
+						<div class="layui-input-block">
+							<input type="text" name="server_end" required lay-verify="required"
+								placeholder=""
+								autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">全局服起始ID</label>
+						<div class="layui-input-block">
+							<input type="text" name="global_start" required lay-verify="required"
+								placeholder=""
+								autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">全局服截止ID</label>
+						<div class="layui-input-block">
+							<input type="text" name="global_end" required lay-verify="required"
+								placeholder=""
+								autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-input-block">
+							<button class="layui-btn" lay-submit lay-filter="group">立即提交</button>
+							<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</fieldset>
+
+		<fieldset class="layui-elem-field layui-field-title">
+			<legend>添加单组服</legend>
+			<div class="layui-field-box">
+				<form class="layui-form" action="">
+					<div class="layui-form-item">
+						<label class="layui-form-label">选择SSH用户</label>
+						<div class="layui-input-block">
+							<select name="choose_ssh_user" lay-verify="required" id="choose_ssh_user"
+								lay-search
+								lay-filter="choose_ssh_user">
+								<option value=""></option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">服务器ID</label>
+						<div class="layui-input-block">
+							<input type="text" name="serverid" required lay-verify="required"
+								placeholder="请输入服务器ID" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">脚本路径</label>
+						<div class="layui-input-block">
+							<input type="text" name="location" required lay-verify="required"
+								placeholder="请输入nohup_run文件的绝对路径，例:~/sg_server/nohup_run或者/home/nei/sg_server/nohup_run"
+								autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-input-block">
+							<button class="layui-btn" lay-submit lay-filter="form_server">立即提交</button>
+							<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</fieldset>
+
+		<fieldset class="layui-elem-field layui-field-title">
+			<legend>添加全局服</legend>
+			<div class="layui-field-box">
+				<form class="layui-form" action="">
+					<div class="layui-form-item">
+						<label class="layui-form-label">选择SSH用户</label>
+						<div class="layui-input-block">
+							<select name="choose_global_ssh_user" lay-verify="required" lay-search
+								id="choose_global_ssh_user" lay-filter="choose_global_ssh_user">
+								<option value=""></option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">服务器ID</label>
+						<div class="layui-input-block">
+							<input type="text" name="serverid" required lay-verify="required"
+								placeholder="请输入服务器ID" autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">脚本路径</label>
+						<div class="layui-input-block">
+							<input type="text" name="location" required lay-verify="required"
+								placeholder="请输入nohup_run文件的绝对路径，例:~/sg_server/nohup_run或者/home/nei/sg_server/nohup_run"
+								autocomplete="off" class="layui-input">
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<div class="layui-input-block">
+							<button class="layui-btn" lay-submit lay-filter="form_global_server">立即提交</button>
+							<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</fieldset>
+
+		<script>
+			function addSelect(ip, port, user, id){
+				$("#choose_ssh_user").append("<option value='" + id + "'>" + user + '@' + ip + ':' + port + "</option>");
+				$("#choose_global_ssh_user").append("<option value='" + id + "'>" + user + '@' + ip + ':' + port + "</option>");
+				renderForm();
+			}
+		
+			$(document).ready(function () {
+				send_msg_to_server(10, null, function(data){
+					console.log(data);
+					for(idx in data.data){
+						addSelect(data.data[idx].ip, data.data[idx].port, data.data[idx].username, data.data[idx].id);
+					}
+					renderForm();
+				});
+    	});
+
+			layui.use(['form','layer'], function(){
+				var form = layui.form;
+				var layer = layui.layer;
+				//监听提交
+				form.on('submit(form_ssh_user)', function(data_){
+					console.log(data_);
+					send_data = {
+						ip : data_.field.ssh_ip,
+						port : data_.field.ssh_port,
+						user : data_.field.ssh_user,
+						passwd : data_.field.ssh_passwd,
+					}
+					send_msg_to_server(9, send_data, function(res){
+						if(res.code != 200){
+							//TODO
+						}
+						else{
+							addSelect(res.data.data.ip, res.data.data.port, res.data.data.user, res.data.res['LAST_INSERT_ID()']);
+							layer.msg("提交成功", {
+                                icon: 6,
+                                time: 2000
+                            });
+						}					
+					});
+					return false;
+				});
+				form.on('submit(form_server)', function(data_){
+					console.log(data_);
+					send_data = {
+						server_id : data_.field.serverid,
+						server_type : 'server',
+						ssh_id : data_.field.choose_ssh_user,
+						location : data_.field.location,
+					}
+					send_msg_to_server(11, send_data, function(res){
+						console.log(res);
+						layer.msg("提交成功", {
+                                icon: 6,
+                                time: 2000
+                            });
+					});
+					return false;
+				});
+				form.on('submit(form_global_server)', function(data_){
+					console.log(data_);
+					send_data = {
+						server_id : data_.field.serverid,
+						server_type : 'global',
+						ssh_id : data_.field.choose_global_ssh_user,
+						location : data_.field.location,
+					}
+					send_msg_to_server(11, send_data, function(res){
+						console.log(res);
+						layer.msg("提交成功", {
+                                icon: 6,
+                                time: 2000
+                            });
+					});
+					return false;
+				});
+				form.on('submit(group)', function(data_){
+					console.log(data_);
+					send_data = {
+						name : data_.field.group_name,
+						server_start : data_.field.server_start,
+						server_end : data_.field.server_end,
+						global_start : data_.field.global_start,
+						global_end : data_.field.global_end
+					}
+					send_msg_to_server(12, send_data, function(res){
+						console.log(res);
+						layer.msg("提交成功", {
+                                icon: 6,
+                                time: 2000
+                            });
+					});
+					return false;
+				});
+			});
+		</script>
+	</body>
