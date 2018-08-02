@@ -1,56 +1,41 @@
 <!DOCTYPE HTML>
 <html>
 
-  <head>
-    <meta charset="utf-8">
-    <meta name="renderer" content="webkit|ie-comp|ie-stand">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport"
-      content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"
-      />
-    <meta http-equiv="Cache-Control" content="no-siteapp" />
-    <!--[if lt IE 9]>
+<head>
+  <meta charset="utf-8">
+  <meta name="renderer" content="webkit|ie-comp|ie-stand">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <!--[if lt IE 9]>
 <script type="text/javascript" src="lib/html5shiv.js"></script>
 <script type="text/javascript" src="lib/respond.min.js"></script>
 <![endif]-->
-    <link rel="stylesheet" type="text/css"
-      href="../dep/static/h-ui/css/H-ui.min.css" />
-    <link rel="stylesheet" type="text/css"
-      href="../dep/static/h-ui.admin/css/H-ui.admin.css" />
-    <link rel="stylesheet" type="text/css"
-      href="../dep/lib/Hui-iconfont/1.0.8/iconfont.css" />
-    <link rel="stylesheet" type="text/css"
-      href="../dep/static/h-ui.admin/skin/default/skin.css" id="skin" />
-    <link rel="stylesheet" type="text/css"
-      href="../dep/static/h-ui.admin/css/style.css" />
-    <link rel="stylesheet" type="text/css" href="../dep/lib/layui/css/layui.css"
-      />
-    <script type="text/javascript" src="../dep/lib/jquery/1.9.1/jquery.min.js"></script>
-    <script type="text/javascript" src="../dep/static/h-ui/js/H-ui.min.js"></script>
-    <script type="text/javascript"
-      src="../dep/static/h-ui.admin/js/H-ui.admin.js"></script>
-    <script type="text/javascript"
-      src="../dep/lib/My97DatePicker/4.8/WdatePicker.js"></script>
-    <script type="text/javascript"
-      src="../dep/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
-    <script type="text/javascript" src="../dep/lib/layui/layui.js"
-      charset="utf-8"></script>
-    <script type="text/javascript" src="../dep/js/server_list_common.js"
-      charset="utf-8"></script>
-    <script type="text/javascript" src="../dep/js/common.js" charset="utf-8"></script>
-    <script type="text/javascript"
-      src="../dep/lib/hcharts/Highcharts/5.0.6/js/highcharts.js"></script>
-    <script type="text/javascript"
-      src="../dep/lib/hcharts/Highcharts/5.0.6/js/modules/exporting.js"></script>
-    <script type="text/javascript" src="../dep/js/config.js" charset="utf-8"></script>
-    <script type="text/javascript" src="./server_status.js" charset="utf-8"></script>
-    <script type="text/javascript" src="./operation_log.js" charset="utf-8"></script>
-    <!--[if IE 6]>
+  <link rel="stylesheet" type="text/css" href="../dep/static/h-ui/css/H-ui.min.css" />
+  <link rel="stylesheet" type="text/css" href="../dep/static/h-ui.admin/css/H-ui.admin.css" />
+  <link rel="stylesheet" type="text/css" href="../dep/lib/Hui-iconfont/1.0.8/iconfont.css" />
+  <link rel="stylesheet" type="text/css" href="../dep/static/h-ui.admin/skin/default/skin.css" id="skin" />
+  <link rel="stylesheet" type="text/css" href="../dep/static/h-ui.admin/css/style.css" />
+  <link rel="stylesheet" type="text/css" href="../dep/lib/layui/css/layui.css" />
+  <script type="text/javascript" src="../dep/lib/jquery/1.9.1/jquery.min.js"></script>
+  <script type="text/javascript" src="../dep/static/h-ui/js/H-ui.min.js"></script>
+  <script type="text/javascript" src="../dep/static/h-ui.admin/js/H-ui.admin.js"></script>
+  <script type="text/javascript" src="../dep/lib/My97DatePicker/4.8/WdatePicker.js"></script>
+  <script type="text/javascript" src="../dep/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="../dep/lib/layui/layui.js" charset="utf-8"></script>
+  <script type="text/javascript" src="../dep/js/server_list_common.js" charset="utf-8"></script>
+  <script type="text/javascript" src="../dep/js/common.js" charset="utf-8"></script>
+  <script type="text/javascript" src="../dep/lib/hcharts/Highcharts/5.0.6/js/highcharts.js"></script>
+  <script type="text/javascript" src="../dep/lib/hcharts/Highcharts/5.0.6/js/modules/exporting.js"></script>
+  <script type="text/javascript" src="../dep/js/config.js" charset="utf-8"></script>
+  <script type="text/javascript" src="./server_status.js" charset="utf-8"></script>
+  <script type="text/javascript" src="./operation_log.js" charset="utf-8"></script>
+  <!--[if IE 6]>
 <script type="text/javascript" src="lib/DD_belatedPNG_0.0.8a-min.js" ></script>
 <script>DD_belatedPNG.fix('*');</script>
 <![endif]-->
-    <title>后台监控</title>
-    <style type="text/css">
+  <title>后台监控</title>
+  <style type="text/css">
     html,
     body {
       height: auto;
@@ -103,378 +88,31 @@
       overflow-y: scroll;
     }
   </style>
-  </head>
+</head>
 
-  <body>
-    <div class="layui-tab layui-tab-card">
-      <ul class="layui-tab-title">
-        <li class="layui-this">服务器操作</li>
-        <li>全局服操作</li>
-        <li>操作记录</li>
-        <li>服务器拷贝</li>
-        <li>拷贝记录</li>
-        <li>服务器更新</li>
-        <li>更新记录</li>
-      </ul>
-      <div class="layui-tab-content">
-        <div class="layui-tab-item layui-show">
-          <!-- 服务器操作 -->
-          <div class="layui-fluid">
-            <form class="layui-form" action="">
-
-              <div class="layui-row">
-                <div class="layui-col-lg1">
-                  <label class="layui-form-label">游戏</label>
-                </div>
-                <div class="layui-col-lg4">
-                  <select name="choose_game" lay-filter="choose_game"
-                    id="tab_oper_choose_game" my-tab='oper'>
-                    <option value="">请选择游戏</option>
-                    <option value="0">少年逆命师</option>
-                  </select>
-                </div>
-
-                <div class="layui-col-lg1">
-                  <label class="layui-form-label">服务器组</label>
-                </div>
-
-                <div class="layui-col-lg4">
-                  <select name="choose_server" id='tab_oper_choose_group' lay-verify="required">
-                    <option value="">请选择服务器</option>
-                  </select>
-                </div>
-
-                <div class="layui-col-lg1 layui-col-md-offset1">
-                  <button class="layui-btn" lay-submit lay-filter='filter'>筛选</button>
-                </div>
-              </div>
-              <div class="layui-row">
-                <div class="layui-input-block"></div>
-              </div>
-              <div class="layui-row">
-
-                <div class="layui-col-lg3 layui-col-md-offset1">
-                  <input type="radio" name="operation" value='开启服务器' checked
-                    title='开启服务器'>
-                </div>
-                <div class="layui-col-lg3">
-                  <input type="radio" name="operation" value='关闭服务器'
-                    title="关闭服务器">
-                </div>
-                <div class="layui-col-lg3">
-                  <input type="radio" name="operation" value='重启服务器'
-                    title="重启服务器">
-                </div>
-
-                <div class="layui-col-lg1 layui-col-md-offset1">
-                  <button class="layui-btn" lay-submit lay-filter='exec'>执行</button>
-                </div>
-              </div>
-            </form>
-            <table class="layui-table" id='tab_oper_status'>
-              <!-- <colgroup>
-              <col width="150">
-              <col width="200">
-              <col>
-            </colgroup> -->
-            </table>
-          </div>
-        </div>
-        <div class="layui-tab-item">
-          <!-- 全局服操作 -->
-          <div class="layui-fluid">
-            <form class="layui-form" action="">
-
-              <div class="layui-row">
-                <div class="layui-col-lg1">
-                  <label class="layui-form-label">游戏</label>
-                </div>
-                <div class="layui-col-lg4">
-                  <select name="choose_game" lay-filter="choose_game"
-                    id="tab_global_choose_game" my-tab='global'>
-                    <option value="">请选择游戏</option>
-                    <option value="0">少年逆命师</option>
-                  </select>
-                </div>
-
-                <div class="layui-col-lg1">
-                  <label class="layui-form-label">服务器组</label>
-                </div>
-
-                <div class="layui-col-lg4">
-                  <select name="tab_global_choose_group"
-                    id='tab_global_choose_group' lay-verify="required">
-                    <option value="">请选择服务器</option>
-                  </select>
-                </div>
-
-                <div class="layui-col-lg1 layui-col-md-offset1">
-                  <button class="layui-btn" lay-submit
-                    lay-filter='tab_global_filter'>筛选</button>
-                </div>
-              </div>
-              <div class="layui-row">
-                <div class="layui-input-block"></div>
-              </div>
-              <div class="layui-row">
-
-                <div class="layui-col-lg3 layui-col-md-offset1">
-                  <input type="radio" name="tab_global_operation" value='开启全局服'
-                    checked
-                    title='开启服务器'>
-                </div>
-                <div class="layui-col-lg3">
-                  <input type="radio" name="tab_global_operation" value='关闭全局服'
-                    title="关闭服务器">
-                </div>
-                <div class="layui-col-lg3">
-                  <input type="radio" name="tab_global_operation" value='重启全局服'
-                    title="重启服务器">
-                </div>
-
-                <div class="layui-col-lg1 layui-col-md-offset1">
-                  <button class="layui-btn" lay-submit
-                    lay-filter='tab_global_exec'>执行</button>
-                </div>
-              </div>
-            </form>
-            <table class="layui-table" id='tab_global_status'>
-              <!-- <colgroup>
-              <col width="150">
-              <col width="200">
-              <col>
-            </colgroup> -->
-            </table>
-          </div>
-        </div>
-        <div class="layui-tab-item" id="tab_actionlog">
-          <!-- 开关服日志 -->
-
-        </div>
-        <div class="layui-tab-item">
-          <!-- 服务器拷贝 -->
-          <div class="layui-fluid">
-            <form class="layui-form" action="">
-
-              <div class="layui-row">
-                <div class="layui-col-lg1">
-                  <label class="layui-form-label">游戏</label>
-                </div>
-                <div class="layui-col-lg4">
-                  <select name="choose_game" lay-filter="choose_game"
-                    id="tab_copy_choose_game" my-tab='copy'>
-                    <option value="">请选择游戏</option>
-                    <option value="0">少年逆命师</option>
-                  </select>
-                </div>
-
-                <div class="layui-col-lg1">
-                  <label class="layui-form-label">拷贝源</label>
-                </div>
-
-                <div class="layui-col-lg4">
-                  <select name="tab_copy_choose_source"
-                    id='tab_copy_choose_source'
-                    lay-filter='tab_copy_choose_source'>
-                    <option value="">请选择服务器</option>
-                  </select>
-                </div>
-
-                <!-- <div class="layui-col-lg1 layui-col-md-offset1">
-                <button class="layui-btn" lay-submit lay-filter='filter'>筛选</button>
-              </div> -->
-              </div>
-
-              <!-- <div class="layui-row">
-              <div class="layui-input-block"></div>
-            </div> -->
-              <div class="layui-row">
-                <div class="layui-col-lg2 layui-col-md-offset8">
-                  <select name="tab_copy_choose_version"
-                    id='tab_copy_choose_version'>
-                    <option value="">请选择版本</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="layui-row">
-                <div class="layui-col-lg1">
-                  <label class="layui-form-label">服务器组</label>
-                </div>
-
-                <div class="layui-col-lg4">
-                  <select name="tab_copy_choose_group" lay-verify="required"
-                    id='tab_copy_choose_group'>
-                    <option value="">请选择服务器组</option>
-                  </select>
-                </div>
-
-                <div class="layui-col-lg2 layui-col-md-offset1">
-                  <button class="layui-btn" lay-submit
-                    lay-filter='tab_copy_filter'>查询服务器</button>
-                </div>
-              </div>
-
-              <div class="layui-row">
-                <div class="layui-input-block"></div>
-              </div>
-
-              <div class="layui-row">
-                <div class="layui-col-lg3 layui-col-md-offset1">
-                  <input type="radio" name="tab_copy_operation" value='关服更新'
-                    checked
-                    title='关服更新'>
-                </div>
-                <div class="layui-col-lg1">
-                  <input type="radio" name="tab_copy_operation" value='不关服更新'
-                    title="不关服更新">
-                </div>
-                <div class="layui-col-lg1 layui-col-md-offset1">
-                  <button class="layui-btn" lay-submit
-                    lay-filter='tab_copy_exec'>执行</button>
-                </div>
-              </div>
-            </form>
-
-            <table class="layui-table" id='tab_copy_status'>
-              <!-- <colgroup>
-              <col width="150">
-              <col width="200">
-              <col>
-            </colgroup> -->
-            </table>
-          </div>
-        </div>
-
-        <div class="layui-tab-item" id="tab_copylog">
-          <!-- 拷贝日志 -->
-        </div>
-
-        <div class="layui-tab-item" id="tab_update">
-          <!-- 更新 -->
+<body>
+  <div class="layui-tab layui-tab-card">
+    <ul class="layui-tab-title">
+      <li class="layui-this">服务器操作</li>
+      <li>全局服操作</li>
+      <li>操作记录</li>
+      <li>服务器拷贝</li>
+      <li>拷贝记录</li>
+      <li>服务器更新</li>
+      <li>更新记录</li>
+    </ul>
+    <div class="layui-tab-content">
+      <div class="layui-tab-item layui-show">
+        <!-- 服务器操作 -->
+        <div class="layui-fluid">
           <form class="layui-form" action="">
-            <div class="layui-row">
-              <div class="layui-col-lg1">
-                <div class="layui-row">
-                  <div class="layui-col-lg1 layui-col-md-offset4">
-                    <input type="checkbox" name=""
-                      disabled id="tab_update_checkbox1"
-                      lay-filter="tab_update_checkbox">
-                  </div>
-                </div>
-              </div>
-              <div class="layui-col-lg7">
-                <input type="text" name="tab_update_text1"
-                  placeholder="请输入更新代码文件路径"
-                  autocomplete="off" class="layui-input"
-                  oninput="EnableCheckBox('tab_update_text1',
-                  'tab_update_submit1')" id="tab_update_text1">
-              </div>
-              <div class="layui-col-lg1">
-                <button class="layui-btn layui-btn-radius layui-btn-disabled"
-                  lay-submit id="tab_update_submit1"
-                  lay-filter='tab_update_submit'>提交</button>
-              </div>
-            </div>
 
-            <div class="layui-row">
-              <div class="layui-col-lg1">
-                <div class="layui-row">
-                  <div class="layui-col-lg1 layui-col-md-offset4">
-                    <input type="checkbox" name=""
-                      disabled id="tab_update_checkbox2"
-                      lay-filter="tab_update_checkbox">
-                  </div>
-                </div>
-              </div>
-              <div class="layui-col-lg7">
-                <input type="text" name="tab_update_text2"
-                  placeholder="请输入更新tbl文件名"
-                  autocomplete="off" class="layui-input"
-                  oninput="EnableCheckBox('tab_update_text2',
-                  'tab_update_submit2')" id="tab_update_text2">
-              </div>
-              <div class="layui-col-lg1">
-                <button class="layui-btn layui-btn-radius layui-btn-disabled"
-                  lay-submit
-                  lay-filter='tab_update_submit' id='tab_update_submit2'>提交</button>
-              </div>
-            </div>
-
-            <div class="layui-row">
-              <div class="layui-col-lg1">
-                <div class="layui-row">
-                  <div class="layui-col-lg1 layui-col-md-offset4">
-                    <input type="checkbox" name=""
-                      disabled id="tab_update_checkbox3"
-                      lay-filter="tab_update_checkbox">
-                  </div>
-                </div>
-              </div>
-              <div class="layui-col-lg7">
-                <input type="text" name="tab_update_text3"
-                  placeholder="请输入更新lua文件路径"
-                  autocomplete="off" class="layui-input"
-                  oninput="EnableCheckBox('tab_update_text3',
-                  'tab_update_submit3')" id="tab_update_text3">
-              </div>
-              <div class="layui-col-lg1">
-                <button class="layui-btn layui-btn-radius layui-btn-disabled"
-                  lay-submit
-                  lay-filter='tab_update_submit' id='tab_update_submit3'>提交</button>
-              </div>
-            </div>
-
-            <div class="layui-row">
-              <div class="layui-col-lg1">
-                <div class="layui-row">
-                  <div class="layui-col-lg1 layui-col-md-offset4">
-                    <input type="checkbox" name=""
-                      disabled id="tab_update_checkbox4"
-                      lay-filter="tab_update_checkbox">
-                  </div>
-                </div>
-              </div>
-              <div class="layui-col-lg7">
-                <input type="text" name="tab_update_text4"
-                  placeholder="请输入更新map文件路径"
-                  autocomplete="off" class="layui-input"
-                  oninput="EnableCheckBox('tab_update_text4',
-                  'tab_update_submit4')" id="tab_update_text4">
-              </div>
-              <div class="layui-col-lg1">
-                <button class="layui-btn layui-btn-radius layui-btn-disabled"
-                  lay-submit
-                  lay-filter='tab_update_submit' id='tab_update_submit4'>提交</button>
-              </div>
-            </div>
-
-            <div class="layui-row">
-              <div class="layui-input-block"></div>
-            </div>
-
-            <div class="layui-row">
-              <div class="layui-col-lg1 layui-col-md-offset6">
-                <button class="layui-btn" lay-submit
-                  lay-filter='tab_update_clearall'>清除提交</button>
-              </div>
-              <div class="layui-col-lg1">
-                <button class="layui-btn layui-btn-disabled" lay-submit
-                  lay-filter='tab_update_submitall' id='tab_update_submitall'>执行更新</button>
-              </div>
-            </div>
-          </form>
-          <div class="layui-row">
-            <div class="layui-input-block"></div>
-          </div>
-          <from class="layui-form" action="">
             <div class="layui-row">
               <div class="layui-col-lg1">
                 <label class="layui-form-label">游戏</label>
               </div>
               <div class="layui-col-lg4">
-                <select name="tab_update_choosegame" lay-filter="choose_game"
-                  id="tab_update_choose_game" my-tab='update'>
+                <select name="choose_game" lay-filter="choose_game" id="tab_oper_choose_game" my-tab='oper'>
                   <option value="">请选择游戏</option>
                   <option value="0">少年逆命师</option>
                 </select>
@@ -485,54 +123,346 @@
               </div>
 
               <div class="layui-col-lg4">
-                <select name="tab_update_choose_group" lay-verify="required"
-                  id='tab_update_choose_group'>
-                  <option value="">请选择服务器组</option>
+                <select name="choose_server" id='tab_oper_choose_group' lay-verify="required">
+                  <option value="">请选择服务器</option>
                 </select>
               </div>
 
               <div class="layui-col-lg1 layui-col-md-offset1">
-                <button class="layui-btn" lay-submit
-                  lay-filter='tab_update_filter'>筛选</button>
+                <button class="layui-btn" lay-submit lay-filter='filter'>筛选</button>
               </div>
             </div>
-          </from>
-          <table class="layui-table" id='tab_update_status'>
+            <div class="layui-row">
+              <div class="layui-input-block"></div>
+            </div>
+            <div class="layui-row">
+
+              <div class="layui-col-lg3 layui-col-md-offset1">
+                <input type="radio" name="operation" value='开启服务器' checked title='开启服务器'>
+              </div>
+              <div class="layui-col-lg3">
+                <input type="radio" name="operation" value='关闭服务器' title="关闭服务器">
+              </div>
+              <div class="layui-col-lg3">
+                <input type="radio" name="operation" value='重启服务器' title="重启服务器">
+              </div>
+
+              <div class="layui-col-lg1 layui-col-md-offset1">
+                <button class="layui-btn" lay-submit lay-filter='exec'>执行</button>
+              </div>
+            </div>
+          </form>
+          <table class="layui-table" id='tab_oper_status'>
+            <!-- <colgroup>
+              <col width="150">
+              <col width="200">
+              <col>
+            </colgroup> -->
           </table>
         </div>
+      </div>
+      <div class="layui-tab-item">
+        <!-- 全局服操作 -->
+        <div class="layui-fluid">
+          <form class="layui-form" action="">
 
-        <div class="layui-tab-item" id="tab_updatelog">
-          <!-- 更新日志 -->
+            <div class="layui-row">
+              <div class="layui-col-lg1">
+                <label class="layui-form-label">游戏</label>
+              </div>
+              <div class="layui-col-lg4">
+                <select name="choose_game" lay-filter="choose_game" id="tab_global_choose_game" my-tab='global'>
+                  <option value="">请选择游戏</option>
+                  <option value="0">少年逆命师</option>
+                </select>
+              </div>
+
+              <div class="layui-col-lg1">
+                <label class="layui-form-label">服务器组</label>
+              </div>
+
+              <div class="layui-col-lg4">
+                <select name="tab_global_choose_group" id='tab_global_choose_group' lay-verify="required">
+                  <option value="">请选择服务器</option>
+                </select>
+              </div>
+
+              <div class="layui-col-lg1 layui-col-md-offset1">
+                <button class="layui-btn" lay-submit lay-filter='tab_global_filter'>筛选</button>
+              </div>
+            </div>
+            <div class="layui-row">
+              <div class="layui-input-block"></div>
+            </div>
+            <div class="layui-row">
+
+              <div class="layui-col-lg3 layui-col-md-offset1">
+                <input type="radio" name="tab_global_operation" value='开启全局服' checked title='开启服务器'>
+              </div>
+              <div class="layui-col-lg3">
+                <input type="radio" name="tab_global_operation" value='关闭全局服' title="关闭服务器">
+              </div>
+              <div class="layui-col-lg3">
+                <input type="radio" name="tab_global_operation" value='重启全局服' title="重启服务器">
+              </div>
+
+              <div class="layui-col-lg1 layui-col-md-offset1">
+                <button class="layui-btn" lay-submit lay-filter='tab_global_exec'>执行</button>
+              </div>
+            </div>
+          </form>
+          <table class="layui-table" id='tab_global_status'>
+            <!-- <colgroup>
+              <col width="150">
+              <col width="200">
+              <col>
+            </colgroup> -->
+          </table>
         </div>
+      </div>
+      <div class="layui-tab-item" id="tab_actionlog">
+        <!-- 开关服日志 -->
 
       </div>
-    </div>
+      <div class="layui-tab-item">
+        <!-- 服务器拷贝 -->
+        <div class="layui-fluid">
+          <form class="layui-form" action="">
 
-    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   -->
-    <script>
-    function EnableCheckBox(text_id, button_id){
+            <div class="layui-row">
+              <div class="layui-col-lg1">
+                <label class="layui-form-label">游戏</label>
+              </div>
+              <div class="layui-col-lg4">
+                <select name="choose_game" lay-filter="choose_game" id="tab_copy_choose_game" my-tab='copy'>
+                  <option value="">请选择游戏</option>
+                  <option value="0">少年逆命师</option>
+                </select>
+              </div>
+
+              <div class="layui-col-lg1">
+                <label class="layui-form-label">拷贝源</label>
+              </div>
+
+              <div class="layui-col-lg4">
+                <select name="tab_copy_choose_source" id='tab_copy_choose_source' lay-filter='tab_copy_choose_source'>
+                  <option value="">请选择服务器</option>
+                </select>
+              </div>
+
+              <!-- <div class="layui-col-lg1 layui-col-md-offset1">
+                <button class="layui-btn" lay-submit lay-filter='filter'>筛选</button>
+              </div> -->
+            </div>
+
+            <!-- <div class="layui-row">
+              <div class="layui-input-block"></div>
+            </div> -->
+            <div class="layui-row">
+              <div class="layui-col-lg2 layui-col-md-offset8">
+                <select name="tab_copy_choose_version" id='tab_copy_choose_version'>
+                  <option value="">请选择版本</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="layui-row">
+              <div class="layui-col-lg1">
+                <label class="layui-form-label">服务器组</label>
+              </div>
+
+              <div class="layui-col-lg4">
+                <select name="tab_copy_choose_group" lay-verify="required" id='tab_copy_choose_group'>
+                  <option value="">请选择服务器组</option>
+                </select>
+              </div>
+
+              <div class="layui-col-lg2 layui-col-md-offset1">
+                <button class="layui-btn" lay-submit lay-filter='tab_copy_filter'>查询服务器</button>
+              </div>
+            </div>
+
+            <div class="layui-row">
+              <div class="layui-input-block"></div>
+            </div>
+
+            <div class="layui-row">
+              <div class="layui-col-lg3 layui-col-md-offset1">
+                <input type="radio" name="tab_copy_operation" value='关服更新' checked title='关服更新'>
+              </div>
+              <div class="layui-col-lg1">
+                <input type="radio" name="tab_copy_operation" value='不关服更新' title="不关服更新">
+              </div>
+              <div class="layui-col-lg1 layui-col-md-offset1">
+                <button class="layui-btn" lay-submit lay-filter='tab_copy_exec'>执行</button>
+              </div>
+            </div>
+          </form>
+
+          <table class="layui-table" id='tab_copy_status'>
+            <!-- <colgroup>
+              <col width="150">
+              <col width="200">
+              <col>
+            </colgroup> -->
+          </table>
+        </div>
+      </div>
+
+      <div class="layui-tab-item" id="tab_copylog">
+        <!-- 拷贝日志 -->
+      </div>
+
+      <div class="layui-tab-item" id="tab_update">
+        <!-- 更新 -->
+        <form class="layui-form" action="">
+          <div class="layui-row">
+            <div class="layui-col-lg1">
+              <div class="layui-row">
+                <div class="layui-col-lg1 layui-col-md-offset4">
+                  <input type="checkbox" name="" disabled id="tab_update_checkbox1" lay-filter="tab_update_checkbox">
+                </div>
+              </div>
+            </div>
+            <div class="layui-col-lg7">
+              <input type="text" name="tab_update_text1" placeholder="请输入更新代码文件路径" autocomplete="off" class="layui-input" oninput="EnableCheckBox('tab_update_text1',
+                  'tab_update_submit1')" id="tab_update_text1">
+            </div>
+            <div class="layui-col-lg1">
+              <button class="layui-btn layui-btn-radius layui-btn-disabled" lay-submit id="tab_update_submit1" lay-filter='tab_update_submit'>提交</button>
+            </div>
+          </div>
+
+          <div class="layui-row">
+            <div class="layui-col-lg1">
+              <div class="layui-row">
+                <div class="layui-col-lg1 layui-col-md-offset4">
+                  <input type="checkbox" name="" disabled id="tab_update_checkbox2" lay-filter="tab_update_checkbox">
+                </div>
+              </div>
+            </div>
+            <div class="layui-col-lg7">
+              <input type="text" name="tab_update_text2" placeholder="请输入更新tbl文件名" autocomplete="off" class="layui-input" oninput="EnableCheckBox('tab_update_text2',
+                  'tab_update_submit2')" id="tab_update_text2">
+            </div>
+            <div class="layui-col-lg1">
+              <button class="layui-btn layui-btn-radius layui-btn-disabled" lay-submit lay-filter='tab_update_submit' id='tab_update_submit2'>提交</button>
+            </div>
+          </div>
+
+          <div class="layui-row">
+            <div class="layui-col-lg1">
+              <div class="layui-row">
+                <div class="layui-col-lg1 layui-col-md-offset4">
+                  <input type="checkbox" name="" disabled id="tab_update_checkbox3" lay-filter="tab_update_checkbox">
+                </div>
+              </div>
+            </div>
+            <div class="layui-col-lg7">
+              <input type="text" name="tab_update_text3" placeholder="请输入更新lua文件路径" autocomplete="off" class="layui-input" oninput="EnableCheckBox('tab_update_text3',
+                  'tab_update_submit3')" id="tab_update_text3">
+            </div>
+            <div class="layui-col-lg1">
+              <button class="layui-btn layui-btn-radius layui-btn-disabled" lay-submit lay-filter='tab_update_submit' id='tab_update_submit3'>提交</button>
+            </div>
+          </div>
+
+          <div class="layui-row">
+            <div class="layui-col-lg1">
+              <div class="layui-row">
+                <div class="layui-col-lg1 layui-col-md-offset4">
+                  <input type="checkbox" name="" disabled id="tab_update_checkbox4" lay-filter="tab_update_checkbox">
+                </div>
+              </div>
+            </div>
+            <div class="layui-col-lg7">
+              <input type="text" name="tab_update_text4" placeholder="请输入更新map文件路径" autocomplete="off" class="layui-input" oninput="EnableCheckBox('tab_update_text4',
+                  'tab_update_submit4')" id="tab_update_text4">
+            </div>
+            <div class="layui-col-lg1">
+              <button class="layui-btn layui-btn-radius layui-btn-disabled" lay-submit lay-filter='tab_update_submit' id='tab_update_submit4'>提交</button>
+            </div>
+          </div>
+
+          <div class="layui-row">
+            <div class="layui-input-block"></div>
+          </div>
+
+          <div class="layui-row">
+            <div class="layui-col-lg1 layui-col-md-offset6">
+              <button class="layui-btn" lay-submit lay-filter='tab_update_clearall'>清除提交</button>
+            </div>
+            <div class="layui-col-lg1">
+              <button class="layui-btn layui-btn-disabled" lay-submit lay-filter='tab_update_submitall' id='tab_update_submitall'>执行更新</button>
+            </div>
+          </div>
+        </form>
+        <div class="layui-row">
+          <div class="layui-input-block"></div>
+        </div>
+        <from class="layui-form" action="">
+          <div class="layui-row">
+            <div class="layui-col-lg1">
+              <label class="layui-form-label">游戏</label>
+            </div>
+            <div class="layui-col-lg4">
+              <select name="tab_update_choosegame" lay-filter="choose_game" id="tab_update_choose_game" my-tab='update'>
+                <option value="">请选择游戏</option>
+                <option value="0">少年逆命师</option>
+              </select>
+            </div>
+
+            <div class="layui-col-lg1">
+              <label class="layui-form-label">服务器组</label>
+            </div>
+
+            <div class="layui-col-lg4">
+              <select name="tab_update_choose_group" lay-verify="required" id='tab_update_choose_group'>
+                <option value="">请选择服务器组</option>
+              </select>
+            </div>
+
+            <div class="layui-col-lg1 layui-col-md-offset1">
+              <button class="layui-btn" lay-submit lay-filter='tab_update_filter'>筛选</button>
+            </div>
+          </div>
+        </from>
+        <table class="layui-table" id='tab_update_status'>
+        </table>
+      </div>
+
+      <div class="layui-tab-item" id="tab_updatelog">
+        <!-- 更新日志 -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   -->
+  <script>
+    function EnableCheckBox(text_id, button_id) {
       console.log($('#' + text_id).val());
-      if($('#' + text_id).val() != ''){
+      if ($('#' + text_id).val() != '') {
         $('#' + button_id).attr('class', "layui-btn layui-btn-radius layui-btn-primary");
       }
-      else{
+      else {
         $('#' + button_id).attr('class', "layui-btn layui-btn-radius layui-btn-disabled");
       }
     }
-    
-    function UpdateSubmitallButtonState(){
+
+    function UpdateSubmitallButtonState() {
       var disabled = true;
-      for(let id = 1; id <= 4; id++){
+      for (let id = 1; id <= 4; id++) {
         var label = '#tab_update_checkbox' + id;
-        if($(label).prop('checked') === true){
+        if ($(label).prop('checked') === true) {
           disabled = false;
           break;
         }
       }
-      if(disabled === true){
+      if (disabled === true) {
         $('#tab_update_submitall').attr('class', 'layui-btn layui-btn-disabled');
       }
-      else{
+      else {
         $('#tab_update_submitall').attr('class', 'layui-btn');
       }
       renderForm();
@@ -553,11 +483,11 @@
     var tab_copylog = new OperationLogTab('tab_copylog', layui);
     tab_copylog.addCol('operation_user', '操作用户');
     tab_copylog.addCol('server_name', '服务器');
-    tab_copylog.addCol('extra_data', '服务器版本', function(data){
+    tab_copylog.addCol('extra_data', '服务器版本', function (data) {
       var array = data.split(';');
       return array[1];
     });
-    tab_copylog.addCol('extra_data', '拷贝目标服务器组', function(data){
+    tab_copylog.addCol('extra_data', '拷贝目标服务器组', function (data) {
       var array = data.split(';');
       return array[0];
     });
@@ -565,7 +495,7 @@
     tab_copylog.addCol('operation_date', '操作时间');
     tab_copylog.RegType('不关服更新');
     tab_copylog.RegType('关服更新');
-    
+
     var tab_updatelog = new OperationLogTab('tab_updatelog', layui);
     tab_updatelog.addCol('operation_user', '用户名');
     tab_updatelog.addCol('server_name', '服务器名称');
@@ -598,7 +528,7 @@
       var form = layui.form;
       var layer = layui.layer;
       //监听选择游戏
-      form.on('select(choose_game)', function(data){
+      form.on('select(choose_game)', function (data) {
         console.log(data);
         var id = data.elem.id;
         var tab_name = $('#' + id).attr('my-tab');
@@ -617,15 +547,15 @@
         console.log(text_id);
         console.log(data);
         var input = data.field[text_id];
-        if(input == ''){
+        if (input == '') {
           return false;
         }
 
         input = input.replace(';', '<br>');
         layer.confirm(input, {
-            title : '请确认输入的信息:'
-          },
-          function(index){
+          title: '请确认输入的信息:'
+        },
+          function (index) {
 
             //1按钮禁用
             var button_label = '#tab_update_submit' + id;
@@ -638,7 +568,7 @@
             $(checkbox_label).attr('disabled', false);
             renderForm();
             layer.close(index);
-        });
+          });
         console.log(id);
         return false;
       });
@@ -646,7 +576,7 @@
       //监听【执行】按钮
       form.on('submit(exec)', function (data) {
         console.log(data);
-        if(tab_oper_server_status == undefined){
+        if (tab_oper_server_status == undefined) {
           alert('尚未生成出服务器列表！');
           return false;
         }
@@ -654,59 +584,59 @@
         return false;
       });
       //监听服务器更新【checkbox】
-      form.on('checkbox(tab_update_checkbox)', function(data){
+      form.on('checkbox(tab_update_checkbox)', function (data) {
         console.log(data);
         //var id = data.elem.id.charAt(data.elem.id.length - 1);
         UpdateSubmitallButtonState();
       });
       //监听服务器更新【执行更新】按钮
-      form.on('submit(tab_update_submitall)', function(data){
+      form.on('submit(tab_update_submitall)', function (data) {
         console.log(data);
         //如果灰态则不响应
-        if(data.elem.className == "layui-btn layui-btn-disabled"){
+        if (data.elem.className == "layui-btn layui-btn-disabled") {
           return false;
         }
         var res = {}
-        for(let id = 1; id <= 4; id++){
+        for (let id = 1; id <= 4; id++) {
           var label = '#tab_update_checkbox' + id;
           var text_id = 'tab_update_text' + id;
-          if($(label).prop('checked') === true){
-            if(id == 1){
+          if ($(label).prop('checked') === true) {
+            if (id == 1) {
               //更新代码必须关服
-              for(checked_id in tab_update_server_status.server_checked){
-                if(tab_update_server_status.get_display_state(checked_id) != tab_update_server_status.SHOW_STATE.CLOSED){
+              for (checked_id in tab_update_server_status.server_checked) {
+                if (tab_update_server_status.get_display_state(checked_id) != tab_update_server_status.SHOW_STATE.CLOSED) {
                   alert('更新代码必须关服！');
                   return false;
                 }
               }
               var code_input = data.field[text_id];
               //检查分隔符
-              if(code_input.search(/[,]/) > 0){
+              if (code_input.search(/[,]/) > 0) {
                 alert('请以分号为分隔符');
                 return false;
               }
               //检查是否有后缀
-              if(code_input != 'all'){
-                if(code_input.search(/\./) < 0){
+              if (code_input != 'all') {
+                if (code_input.search(/\./) < 0) {
                   alert('不可输入文件夹；文件名请输入后缀');
                   return false;
                 }
                 res[text_id] = code_input;
               }
               //all换成.
-              else{
+              else {
                 code_input = '.';
-              }       
+              }
             }
-            else{
+            else {
               res[text_id] = data.field[text_id];
             }
           }
-          else{
+          else {
             res[text_id] = '';
           }
         }
-        if(tab_update_server_status == undefined){
+        if (tab_update_server_status == undefined) {
           alert('尚未生成出服务器列表！');
           return false;
         }
@@ -714,14 +644,14 @@
         return false;
       });
       //监听服务器更新【清除提交】按钮
-      form.on('submit(tab_update_clearall)', function(data){
+      form.on('submit(tab_update_clearall)', function (data) {
 
         return true;
       });
       //监听tab_global【执行】按钮
       form.on('submit(tab_global_exec)', function (data) {
         console.log(data);
-        if(tab_global_server_status == undefined){
+        if (tab_global_server_status == undefined) {
           alert('尚未生成出服务器列表！');
           return false;
         }
@@ -799,7 +729,7 @@
       });
       //监听服务器拷贝【执行】按钮
       form.on('submit(tab_copy_exec)', function (data) {
-        if(tab_copy_server_status == undefined){
+        if (tab_copy_server_status == undefined) {
           alert('尚未生成出服务器列表！');
           return false;
         }
@@ -891,7 +821,7 @@
       tab_copylog.initTab();
       tab_updatelog.initTab();
     });
-    </script>
-  </body>
+  </script>
+</body>
 
 </html>
