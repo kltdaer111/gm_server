@@ -744,6 +744,7 @@ function rpc_call(controller, func, msg_data, call_back) {
 		},
 		error: function (err) {
 			console.log(err);
+			alert('操作失败');
 		}
 	});
 }

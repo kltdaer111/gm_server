@@ -75,6 +75,7 @@
 						<div class="layui-input-block"></div>
 					</div>
 				</form>
+				<table id="tab_mark_table" lay-filter="tab_mark_table"></table>
 			</div>
 			<div class="layui-tab-item">
 				账号服配置
@@ -92,7 +93,7 @@
 		this.layui = layui;
 	}
 
-	ThisInterface.prototype.init = function(){
+	ThisInterface.prototype.init = function () {
 		this.listenSelectGame();
 		this.listenQuery();
 		this.listenNew();
@@ -103,7 +104,7 @@
 	}
 
 	ThisInterface.prototype.getSelector = function (selector) {
-		if(selector === undefined){
+		if (selector === undefined) {
 			return '#' + this.id;
 		}
 		return '#' + this.id + ' ' + selector;
@@ -134,16 +135,15 @@
 			var filter = 'submit(' + self.getFilterName('query') + ')';
 			form.on(filter, function (data) {
 				console.log(data);
-				//
-				if(self.query_func !== undefined){
-					self.query_func(postion_selector);
+				if (self.query_func !== undefined) {
+					self.query_func();
 				}
 				return false;
 			});
 		});
 	}
 
-	ThisInterface.prototype.regQueryFunc = function(query_func){
+	ThisInterface.prototype.regQueryFunc = function (query_func) {
 		this.query_func = query_func;
 	}
 
@@ -154,11 +154,11 @@
 			var filter = 'submit(' + self.getFilterName('new') + ')';
 			form.on(filter, function (data) {
 				console.log(data);
-				if(data.elem.className === "layui-btn layui-btn-disabled"){
+				if (data.elem.className === "layui-btn layui-btn-disabled") {
 					return false;
 				}
 				//添加新标签
-				if(self.new_func !== undefined){
+				if (self.new_func !== undefined) {
 					self.new_func();
 				}
 				return false;
@@ -166,27 +166,152 @@
 		});
 	}
 
-	ThisInterface.prototype.regNewFunc = function(new_func){
+	ThisInterface.prototype.regNewFunc = function (new_func) {
 		this.new_func = new_func;
 	}
 
-	
+	function genTable() {
+		rpc_call('mark', 'query_mark', {}, function (res) {
+			console.log(res);
+			var table = layui.table;
+			table.render({
+				elem: '#tab_mark_table' //指定原始表格元素选择器（推荐id选择器）
+				, cols: [[ //标题栏
+					{ checkbox: true }
+					, { field: 'mark_type', title: '标签名称' }
+					, { field: 'platform_name', title: '平台名称' }
+					, { field: 'channel_name', title: '渠道名称' }
+					, { field: 'compatible_version', title: '客户端兼容版本号' }
+					, { field: 'version', title: '客户端最新版本号' }
+					, {
+						field: 'modify', title: '操作', align: 'center', width: 100, toolbar:
+							"<script type=\"text/html\"><a class=\"layui-btn layui-btn-sm\" lay-event=\"edit\">修改<\/a><\/script>"
+					}
+				]]
+				, data: res.data
+				, page: true
+				, limit: 20
+			});
+		});
+	}
+
+	// function layerTable(layui){
+	// 	this.layui = layui;
+	// 	this.edit_line = {};
+	// }
+
+	function layerTable(data, cannot_edit_col_idx_array) {
+		var layer = layui.layer;
+		var table = layui.table;
+		var form = layui.form;
+
+		var edit_line = {};
+
+		layer.open({
+			type: 1,
+			content:
+				'<form class="layui-form" action="">\
+			<table id="table" lay-filter="table"></table>\
+			<div class="layui-row">\
+				<div class="layui-col-lg1 layui-col-md-offset8">\
+					<button class="layui-btn" lay-submit lay-filter=\'button\'>提交</button>\
+				</div>\
+			</div>\
+			</form>',
+			area: ['900px', '700px'],
+			success: function (layero, index) {
+				//console.log(layero);
+				//console.log(index);
+				table.render({
+					elem: '#table'
+					, cols: [[
+						{ field: 'type', title: '类别', width: '20%', 'font-weight': 'bold' },
+						{ field: 'data', title: '内容', width: '80%', edit: 'text' }
+					]]
+					, data: data
+					, page: false
+					, limit: 20
+					, done: function (res, cur, count) {
+						cannot_edit_col_idx_array.forEach(element => {
+							setTableGridNotEdit(element, 'data');
+						});
+						setTableGridClickFunc(11, 'data', function (event) {
+							console.log(event);
+							event.target.childNodes[0].nodeValue = '!!!!';
+							rpc_call('mark', 'query_account', '', function (res) {
+								console.log(res);
+								layer.open({
+									type: 1,
+									content: '<table id="table" lay-filter="table"></table>',
+									success: function (layero, index) {
+										table.render({
+											elem: '#table',
+											cols: [[
+												{}
+											]],
+										});
+
+									}
+								});
+							});
+
+
+						});
+					}
+				});
+				table.on('edit(table)', function (obj) {
+					console.log(obj);
+					edit_line[obj.field] = obj.value;
+				});
+				form.on('submit(button)', function (sub_data) {
+					rpc_call('mark', 'update', edit_line, function (res) {
+						console.log(res);
+
+					})
+					return false;
+				});
+			}
+		});
+	}
+
+	function setTableGridNotEdit(index, col_name) {
+		var dom = $('tbody [data-index="' + index + '"] [data-field="' + col_name + '"]');
+		dom.attr('data-edit', false);
+	}
+
+	function setTableGridClickFunc(index, col_name, func) {
+		var dom = $('tbody [data-index="' + index + '"] [data-field="' + col_name + '"]');
+		//var para = dom.children('div').text();
+		//dom.bind('click', para, func);
+		dom.click(func);
+	}
+
+	function transferDataForLayerTable(data) {
+		var res = [];
+		for (idx in data) {
+			res.push({ type: '<em>' + idx + '</em>', data: data[idx] });
+		}
+		return res;
+	}
 
 	var interface_mark = new ThisInterface('tab_mark', layui);
 	interface_mark.init();
+	interface_mark.regQueryFunc(genTable);
 
 	layui.use(['form', 'layedit', 'element', 'table', 'laydate', 'layer'], function () {
 		var form = layui.form;
-		// form.on('select(tab_mark_choose_game)', function (data) {
-		// 	// console.log(data);
-		// 	// $('#tab_mark [name="choose_group"]').empty();
-		// 	// $('#tab_mark [name="choose_group"]').append("<option value='a'>a</option>");
+		var table = layui.table;
 
-		// 	// for (name in server_group_data) {
-		// 	// 	$(label).append("<option value='" + name + "'>" + name + "</option>");
-		// 	// }
-		// 	renderForm();
-		// });
+		table.on('tool(tab_mark_table)', function (obj) {
+			console.log(obj);
+			send_msg = { mark_type: obj.data['mark_type'] };
+			rpc_call('mark', 'query_all', send_msg, function (res) {
+				console.log(res);
+				var transfer_data = transferDataForLayerTable(res.data[0]);
+				console.log(transfer_data);
+				layerTable(transfer_data, [0, 10, 11]);
+			});
+		});
 	});
 </script>
 

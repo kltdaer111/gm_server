@@ -52,6 +52,12 @@ class CI_Model {
 		return $CI->$key;
 	}
 }
+
+class DB_Model extends CI_Model{
+	function get_last_db_error(){
+		return $this->db->_error_message();
+	}
+}
 // END Model Class
 
 /* End of file Model.php */
