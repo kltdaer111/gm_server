@@ -26,6 +26,20 @@ class Mark extends CI_Controller
 		$this->Response->response(200, $res);
 	}
 
+	public function query_account()
+	{
+		$this->load->model('MarkModel', '', $this->db_config);
+		$res = $this->MarkModel->get_account_info();
+		$this->Response->response(200, $res);
+	}
+
+	public function query_login()
+	{
+		$this->load->model('MarkModel', '', $this->db_config);
+		$res = $this->MarkModel->get_login_info();
+		$this->Response->response(200, $res);
+	}
+
 	public function query_all()
 	{
 		$this->load->model('MarkModel', '', $this->db_config);

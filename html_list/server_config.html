@@ -233,32 +233,11 @@
 					, limit: 20
 					, done: function (res, cur, count) {
 						cannot_edit_col_idx_array.forEach(element => {
-							setTableGridNotEdit(element, 'data');
+							setTableGridNotEdit('table', element, 'data');
 						});
-						setTableGridClickFunc(11, 'data', function (event) {
-							console.log(event);
-							event.target.childNodes[0].nodeValue = '!!!!';
-							rpc_call('mark', 'query_account', '', function (res) {
-								console.log(res);
-								layer.open({
-									type: 1,
-									content: '<table id="table" lay-filter="table"></table>',
-									success: function (layero, index) {
-										table.render({
-											elem: '#table',
-											cols: [[
-												{}
-											]],
-										});
-
-									}
-								});
-							});
-
-
-						});
-					}
-				});
+						setTableGridClickFunc('table', [11], 'data', onClickCol('account'));
+						setTableGridClickFunc('table', [10], 'data', onClickCol('login'));
+					});
 				table.on('edit(table)', function (obj) {
 					console.log(obj);
 					edit_line[obj.field] = obj.value;
@@ -274,16 +253,100 @@
 		});
 	}
 
-	function setTableGridNotEdit(index, col_name) {
-		var dom = $('tbody [data-index="' + index + '"] [data-field="' + col_name + '"]');
+	function onClickCol(type) {
+		return function (event) {
+			console.log(event);
+			//event.target.childNodes[0].nodeValue = '!!!!';
+			var func = '';
+			switch (type) {
+				case 'account':
+					func = 'query_account';
+					break;
+				case 'login':
+					func = 'query_login';
+					break;
+				default:
+					return;
+			}
+			rpc_call('mark', func, '', function (res) {
+				console.log(res);
+				var names = event.target.childNodes[0].nodeValue;
+				var array_name = names.split(';');
+				array_name.forEach(ele => {
+					res.data.forEach(element => {
+						if (element.server_name == ele) {
+							element['LAY_CHECKED'] = true;
+						}
+					});
+				});
+				layer.open({
+					type: 1,
+					content: '<table id="table1" lay-filter="table1"></table>',
+					cancel: function (index, layero) {
+						var checkStatus = table.checkStatus('table1');
+						console.log(checkStatus);
+						var show_data = '';
+						checkStatus.data.forEach(ele => {
+							show_data += ele.server_name;
+							show_data += ';';
+						});
+						if (show_data != '') {
+							show_data = show_data.slice(0, -1);
+						}
+						event.target.childNodes[0].nodeValue = show_data;
+					},
+					success: function (layero, index) {
+						table.render({
+							elem: '#table1',
+							cols: [[
+								{ checkbox: true },
+								{ field: 'server_name', title: '服务器名称' },
+								{ field: 'ip', title: '服务器IP' },
+								{ field: 'port', title: '服务器PORT' }
+							]],
+							data: res.data,
+							done: function (res, cur, count) {
+								//勾选已有的名称
+								// var array_name = names.split(';');
+								// array_name.forEach(ele => {
+
+								// });
+								//setTabelGridChecked('table1', 0);
+								// var checkStatus = table.checkStatus('table1');
+								// console.log(checkStatus);
+								// table.on('checkbox(table1)', function (obj) {
+								// 	console.log(obj.checked); //当前是否选中状态
+								// 	console.log(obj.data); //选中行的相关数据
+								// 	console.log(obj.type); //如果触发的是全选，则为：all，如果触发的是单选，则为：one
+
+
+								// });
+							},
+						});
+					}
+				});
+			});
+
+		}
+	}
+
+	function setTabelGridChecked(table_id, index) {
+		var dom = $('#' + table_id + ' + div tbody [data-index="' + index + '"] .layui-form-checkbox');
+		dom.attr('class', 'layui-unselect layui-form-checkbox layui-form-checked');
+	}
+
+	function setTableGridNotEdit(table_id, index, col_name) {
+		var dom = $('#' + table_id + ' + div tbody [data-index="' + index + '"] [data-field="' + col_name + '"]');
 		dom.attr('data-edit', false);
 	}
 
-	function setTableGridClickFunc(index, col_name, func) {
-		var dom = $('tbody [data-index="' + index + '"] [data-field="' + col_name + '"]');
-		//var para = dom.children('div').text();
-		//dom.bind('click', para, func);
-		dom.click(func);
+	function setTableGridClickFunc(table_id, index_array, col_name, func) {
+		index_array.forEach(index => {
+			var dom = $('#' + table_id + ' + div tbody [data-index="' + index + '"] [data-field="' + col_name + '"]');
+			//var para = dom.children('div').text();
+			//dom.bind('click', para, func);
+			dom.click(func);
+		});
 	}
 
 	function transferDataForLayerTable(data) {

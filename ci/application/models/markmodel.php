@@ -16,6 +16,21 @@ class MarkModel extends DB_Model
         return $query->result();
     }
 
+    public function get_account_info()
+    {
+        $query = $this->db->get('account_server_table');
+        //echo $this->db->_error_message();
+        return $query->result();
+    }
+
+    public function get_login_info()
+    {
+        $query = $this->db->get('login_server_table');
+        //echo $this->db->_error_message();
+        return $query->result();
+    }
+
+
     public function get_all_info($mark)
     {
         $sql = "SELECT platform_info.mark_type, platform_name, channel_name, version, compatible_version, t3.bbs_url, t4.plist_url, t5.notice_url, t6.res_url, t7.combat_url, t1.{$this->login_server_name}, t2.{$this->account_server_name} FROM platform_info LEFT JOIN (SELECT GROUP_CONCAT(bbs_url SEPARATOR ';') AS bbs_url, mark_type FROM bbs_info GROUP BY mark_type) AS t3 ON t3.mark_type=platform_info.mark_type LEFT JOIN (SELECT GROUP_CONCAT(plist_url SEPARATOR ';') AS plist_url, mark_type FROM plist_info GROUP BY mark_type) AS t4 ON t4.mark_type=platform_info.mark_type LEFT JOIN (SELECT GROUP_CONCAT(notice_url SEPARATOR ';') AS notice_url, mark_type FROM notice_info GROUP BY mark_type) AS t5 ON t5.mark_type=platform_info.mark_type LEFT JOIN (SELECT GROUP_CONCAT(res_url SEPARATOR ';') AS res_url, mark_type FROM res_info GROUP BY mark_type) AS t6 ON t6.mark_type=platform_info.mark_type LEFT JOIN (SELECT GROUP_CONCAT(combat_url SEPARATOR ';') AS combat_url, mark_type FROM combat_view GROUP BY mark_type) AS t7 ON t7.mark_type=platform_info.mark_type LEFT JOIN (SELECT GROUP_CONCAT(server_name SEPARATOR ';') AS {$this->login_server_name}, mark_type FROM login_server_list GROUP BY mark_type) AS t1 ON t1.mark_type=platform_info.mark_type LEFT JOIN (SELECT GROUP_CONCAT(server_name SEPARATOR ';') AS {$this->account_server_name}, mark_type FROM account_server_list GROUP BY mark_type) AS t2 ON t2.mark_type=platform_info.mark_type WHERE platform_info.mark_type='{$mark}';";
