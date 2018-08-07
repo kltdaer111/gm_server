@@ -77,47 +77,81 @@
 				</form>
 				<table id="tab_mark_table" lay-filter="tab_mark_table"></table>
 			</div>
-			<div class="layui-tab-item">
-				<div class="layui-tab-item layui-show" id="tab_account">
-					<form class="layui-form" action="">
-						<div class="layui-row">
-							<div class="layui-col-lg1">
-								<label class="layui-form-label">游戏</label>
-							</div>
-							<div class="layui-col-lg4">
-								<select name="choose_game" lay-filter="tab_account_choose_game" lay-verify="required">
-									<option value="">请选择游戏</option>
-									<option value="0">少年逆命师</option>
-								</select>
-							</div>
 
-							<div class="layui-col-lg1">
-								<label class="layui-form-label">服务器组</label>
-							</div>
+			<div class="layui-tab-item" id="tab_account">
+				<form class="layui-form" action="">
+					<div class="layui-row">
+						<div class="layui-col-lg1">
+							<label class="layui-form-label">游戏</label>
+						</div>
+						<div class="layui-col-lg4">
+							<select name="choose_game" lay-filter="tab_account_choose_game" lay-verify="required">
+								<option value="">请选择游戏</option>
+								<option value="0">少年逆命师</option>
+							</select>
+						</div>
 
-							<div class="layui-col-lg4">
+						<div class="layui-col-lg1">
+							<label class="layui-form-label">服务器组</label>
+						</div>
 
-								<select name="choose_group" lay-verify="required">
-									<option value=""></option>
-								</select>
-							</div>
+						<div class="layui-col-lg4">
 
-							<div class="layui-col-lg1 layui-col-md-offset1">
-								<div class="layui-btn-group">
-									<button class="layui-btn" lay-submit lay-filter='tab_account_query'>查询</button>
-									<button class="layui-btn" lay-submit lay-filter='tab_account_new'>新增</button>
-								</div>
+							<select name="choose_group" lay-verify="required">
+								<option value=""></option>
+							</select>
+						</div>
+
+						<div class="layui-col-lg1 layui-col-md-offset1">
+							<div class="layui-btn-group">
+								<button class="layui-btn" lay-submit lay-filter='tab_account_query'>查询</button>
+								<button class="layui-btn" lay-submit lay-filter='tab_account_new'>新增</button>
 							</div>
 						</div>
-						<div class="layui-row">
-							<div class="layui-input-block"></div>
-						</div>
-					</form>
-					<table id="tab_account_table" lay-filter="tab_account_table"></table>
-				</div>
+					</div>
+					<div class="layui-row">
+						<div class="layui-input-block"></div>
+					</div>
+				</form>
+				<table id="tab_account_table" lay-filter="tab_account_table"></table>
 			</div>
-			<div class="layui-tab-item">
-				登录服配置
+
+			<div class="layui-tab-item" id="tab_login">
+				<form class="layui-form" action="">
+					<div class="layui-row">
+						<div class="layui-col-lg1">
+							<label class="layui-form-label">游戏</label>
+						</div>
+						<div class="layui-col-lg4">
+							<select name="choose_game" lay-filter="tab_login_choose_game" lay-verify="required">
+								<option value="">请选择游戏</option>
+								<option value="0">少年逆命师</option>
+							</select>
+						</div>
+
+						<div class="layui-col-lg1">
+							<label class="layui-form-label">服务器组</label>
+						</div>
+
+						<div class="layui-col-lg4">
+
+							<select name="choose_group" lay-verify="required">
+								<option value=""></option>
+							</select>
+						</div>
+
+						<div class="layui-col-lg1 layui-col-md-offset1">
+							<div class="layui-btn-group">
+								<button class="layui-btn" lay-submit lay-filter='tab_login_query'>查询</button>
+								<button class="layui-btn" lay-submit lay-filter='tab_login_new'>新增</button>
+							</div>
+						</div>
+					</div>
+					<div class="layui-row">
+						<div class="layui-input-block"></div>
+					</div>
+				</form>
+				<table id="tab_login_table" lay-filter="tab_login_table"></table>
 			</div>
 		</div>
 	</div>
@@ -208,6 +242,50 @@
 		this.new_func = new_func;
 	}
 
+	function genLoginTable(obj){
+		console.log(obj);
+		var range_array = obj.field.choose_group.split(',');
+
+		rpc_call('mark', 'query_login', { range: range_array }, function (res) {
+			console.log(res);
+			//res.data.forEach
+			var table = layui.table;
+			table.render({
+				elem: '#tab_login_table',
+				cols: [[
+					{ checkbox: true },
+					{ field: 'server_name', title: '登录服名称' },
+					{ field: 'ip', title: 'ip' },
+					{ field: 'port', title: 'port' },
+					{ field: 'mark_type', title: '渠道类型标记' },
+					{
+						field: 'modify', title: '操作', align: 'center', width: 100, toolbar:
+							"<script type=\"text/html\"><a class=\"layui-btn layui-btn-sm\" lay-event=\"edit\">修改<\/a><\/script>"
+					}
+				]],
+				page: true,
+				data: res.data,
+				limit: 20,
+				done: function () {
+					table.on('tool(tab_login_table)', function (obj) {
+						console.log(obj);
+						var data = [
+							{ type: "<em>server_name</em>", data: obj.data.server_name },
+							{ type: "<em>ip</em>", data: obj.data.ip },
+							{ type: "<em>port</em>", data: obj.data.port },
+							{ type: "<em>mark_type</em>", data: obj.data.mark_type },
+						];
+						layerTable('table_login_modify', data, function (edit_line) {
+							return function (res, cur, count) {
+								setTableGridNotEdit('table_login_modify', [3], 'data');
+							}
+						});
+					});
+				}
+			});
+		});
+	}
+
 	function genAccountTable(obj) {
 		console.log(obj);
 		var range_array = obj.field.choose_group.split(',');
@@ -241,22 +319,11 @@
 							{ type: "<em>port</em>", data: obj.data.port },
 							{ type: "<em>mark_type</em>", data: obj.data.mark_type },
 						];
-						layerTable('table_account_modify', data, function (res, cur, count) {
-							setTableGridNotEdit('table_account_modify', [3], 'data');
+						layerTable('table_account_modify', data, function (edit_line) {
+							return function (res, cur, count) {
+								setTableGridNotEdit('table_account_modify', [3], 'data');
+							}
 						});
-						// send_msg = { mark_type: obj.data['mark_type'] };
-						// rpc_call('mark', 'query_all', send_msg, function (res) {
-						// 	console.log(res);
-						// 	var transfer_data = transferDataForLayerTable(res.data[0]);
-						// 	console.log(transfer_data);
-						// 	layerTable('table111', transfer_data, function (res, cur, count) {
-						// 		console.log(res);
-						// 		setTableGridNotEdit('table111', [0, 10, 11], 'data');
-						// 		setTableGridClickFunc('table111', [11], 'data', onClickCol('account'));
-						// 		setTableGridClickFunc('table111', [10], 'data', onClickCol('login'));
-						// 	});
-						// 	return false;
-						// });
 					});
 				}
 			});
@@ -292,11 +359,13 @@
 							console.log(res);
 							var transfer_data = transferDataForLayerTable(res.data[0]);
 							console.log(transfer_data);
-							layerTable('table111', transfer_data, function (res, cur, count) {
-								console.log(res);
-								setTableGridNotEdit('table111', [0, 10, 11], 'data');
-								setTableGridClickFunc('table111', [11], 'data', onClickCol('account'));
-								setTableGridClickFunc('table111', [10], 'data', onClickCol('login'));
+							layerTable('table111', transfer_data, function (edit_line) {
+								return function (res, cur, count) {
+									console.log(res);
+									setTableGridNotEdit('table111', [0, 10, 11], 'data');
+									setTableGridClickFunc('table111', [11], 'data', onClickCol('account', edit_line));
+									setTableGridClickFunc('table111', [10], 'data', onClickCol('login', edit_line));
+								}
 							});
 							return false;
 						});
@@ -324,7 +393,7 @@
 			type: 1,
 			content:
 				'<form class="layui-form" action="">\
-			<table id="' + table_id + '" lay-filter="table"></table>\
+			<table id="' + table_id + '" lay-filter="' + table_id + '"></table>\
 			<div class="layui-row">\
 				<div class="layui-col-lg1 layui-col-md-offset8">\
 					<button class="layui-btn" lay-submit id="' + table_id + '_button" lay-filter="' + table_id + '_button">提交</button>\
@@ -346,7 +415,7 @@
 					, data: data
 					, page: false
 					, limit: 20
-					, done: func_table_done
+					, done: func_table_done(edit_line)
 				});
 				table.on('edit(' + table_id + ')', function (obj) {
 					console.log(obj);
@@ -355,7 +424,9 @@
 					edit_line[tmp] = obj.value;
 				});
 				var button_selector = '#' + table_id + '_button';
-				form.on('submit(' + table_id + '_button)', func_submit(edit_line, button_selector));
+				if(func_submit !== undefined){
+					form.on('submit(' + table_id + '_button)', func_submit(edit_line, button_selector));
+				}
 				// form.on('submit(' + table_id + '_button)', function (sub_data) {
 				// 	rpc_call('mark', 'update', edit_line, function (res) {
 				// 		console.log(res);
@@ -367,18 +438,21 @@
 		});
 	}
 
-	function onClickCol(type) {
+	function onClickCol(type, edit_line) {
 		var table = layui.table;
 		return function (event) {
 			console.log(event);
 			//event.target.childNodes[0].nodeValue = '!!!!';
 			var func = '';
+			var label = '';
 			switch (type) {
 				case 'account':
 					func = 'query_account';
+					label = 'account_server_name';
 					break;
 				case 'login':
 					func = 'query_login';
+					label = 'login_server_name';
 					break;
 				default:
 					return;
@@ -414,6 +488,7 @@
 							show_data = show_data.slice(0, -1);
 						}
 						event.target.childNodes[0].nodeValue = show_data;
+						edit_line[label] = show_data;
 					},
 					success: function (layero, index) {
 						table.render({
@@ -514,11 +589,13 @@
 	interface_mark.regQueryFunc(genMarkTable);
 	interface_mark.regNewFunc(function (obj) {
 		console.log(obj);
-		layerTable('table', mark_table_format_data(), function (res, cur, count) {
-			//console.log(res);
-			setTableGridNotEdit('table', [10, 11], 'data');
-			setTableGridClickFunc('table', [11], 'data', onClickCol('account'));
-			setTableGridClickFunc('table', [10], 'data', onClickCol('login'));
+		layerTable('table', mark_table_format_data(), function (edit_line) {
+			return function (res, cur, count) {
+				//console.log(res);
+				setTableGridNotEdit('table', [10, 11], 'data');
+				setTableGridClickFunc('table', [11], 'data', onClickCol('account', edit_line));
+				setTableGridClickFunc('table', [10], 'data', onClickCol('login', edit_line));
+			}
 		}, function (changed_data, button_selector) {
 			return function () {
 				if ($(button_selector).attr('class') === "layui-btn layui-btn-disabled") {
@@ -535,7 +612,7 @@
 						$(button_selector).attr('class', "layui-btn layui-btn-disabled");
 						$(button_selector).text('已提交');
 					}
-					else{
+					else {
 						alert('参数错误');
 					}
 				});
@@ -547,6 +624,7 @@
 
 	function account_table_format_data() {
 		return new Array(
+			{ type: "<em>global_id</em>" },
 			{ type: "<em>server_name</em>" },
 			{ type: "<em>ip</em>" },
 			{ type: "<em>port</em>" },
@@ -578,8 +656,88 @@
 	interface_account.regQueryFunc(genAccountTable);
 	interface_account.regNewFunc(function (obj) {
 		console.log(obj);
-		layerTable('table_account', account_table_format_data(), function (res, cur, count) {
-			setTableGridNotEdit('table_account', [3], 'data');
+		layerTable('table_new_account', account_table_format_data(), function (edit_line) {
+			return function (res, cur, count) {
+				setTableGridNotEdit('table_new_account', [4], 'data');
+			}
+		}, function (changed_data, button_selector) {
+			return function () {
+				if ($(button_selector).attr('class') === "layui-btn layui-btn-disabled") {
+					return false;
+				}
+
+				// if (changed_data['server_name'] === '' || changed_data['server_name'] === undefined) {
+				// 	alert('mark_type是必填项');
+				// 	return false;
+				// }
+				console.log(changed_data);
+				rpc_call('mark', 'add_account', changed_data, function (res) {
+					if (res.code === 200) {
+						$(button_selector).attr('class', "layui-btn layui-btn-disabled");
+						$(button_selector).text('已提交');
+					}
+					else {
+						alert('参数错误');
+					}
+				});
+				return false;
+			}
+		});
+	});
+
+	function login_table_format_data() {
+		return new Array(
+			{ type: "<em>server_id</em>" },
+			{ type: "<em>server_name</em>" },
+			{ type: "<em>ip</em>" },
+			{ type: "<em>port</em>" },
+			{ type: "<em>mark_type</em>", style: 'background-color: #eee;' },
+		);
+	}
+
+	var interface_login = new ThisInterface('tab_login', layui, function (data) {
+		console.log(data);
+		//TODO self not defined
+		var selector = '#tab_login [name="choose_group"]';
+		$(selector).empty();
+		rpc_call('serveroper', 'query_group', { game: data.vallue }, function (res) {
+			console.log(res);
+			res.data.forEach(ele => {
+				$(selector).append("<option value='" + ele.group_start_id + ',' + ele.group_end_id + "'>" + ele.group_name + "</option>");
+			});
+			renderForm();
+		});
+	});
+	interface_login.init();
+	interface_login.regQueryFunc(genLoginTable);
+	interface_login.regNewFunc(function (obj) {
+		console.log(obj);
+		layerTable('table_new_login', login_table_format_data(), function (edit_line) {
+			return function (res, cur, count) {
+				setTableGridNotEdit('table_new_login', [4], 'data');
+			}
+		}, function (changed_data, button_selector) {
+			return function () {
+				if ($(button_selector).attr('class') === "layui-btn layui-btn-disabled") {
+					return false;
+				}
+
+				// if (changed_data['server_name'] === '' || changed_data['server_name'] === undefined) {
+				// 	alert('mark_type是必填项');
+				// 	return false;
+				// }
+				console.log(changed_data);
+				rpc_call('mark', 'add_login', changed_data, function (res) {
+					if (res.code === 200) {
+						$(button_selector).attr('class', "layui-btn layui-btn-disabled");
+						$(button_selector).text('已提交');
+					}
+					else {
+						alert('参数错误');
+					}
+				});
+				return false;
+			}
 		});
 	});
 

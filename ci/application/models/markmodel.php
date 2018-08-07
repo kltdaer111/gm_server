@@ -27,6 +27,16 @@ class MarkModel extends DB_Model
         return $query->result();
     }
 
+    public function insert_account($global_id, $server_name, $ip, $port)
+    {
+        return $this->db->insert('account_server_table', array('global_id' => $global_id, 'server_name' => $server_name, 'ip' => $ip, 'port' => $port));
+    }
+
+    public function insert_login($server_id, $server_name, $ip, $port)
+    {
+        return $this->db->insert('login_server_table', array('server_id' => $server_id, 'server_name' => $server_name, 'ip' => $ip, 'port' => $port));
+    }
+
     public function get_account_table_by_name($server_name)
     {
         $this->db->where('server_name', $server_name);
@@ -36,8 +46,8 @@ class MarkModel extends DB_Model
 
     public function get_login_info()
     {
-        $query = $this->db->get('login_server_table');
-        //echo $this->db->_error_message();
+        $sql = "SELECT login_server_table.server_name, ip, port, mark_type FROM login_server_table LEFT JOIN (SELECT server_name, GROUP_CONCAT(mark_type SEPARATOR ';') AS mark_type FROM login_server_list GROUP BY server_name) AS t1 ON login_server_table.server_name=t1.server_name";
+        $query = $this->db->query($sql);
         return $query->result();
     }
 
@@ -147,13 +157,13 @@ class MarkModel extends DB_Model
 
     public function insertIntoAccount($mark_type, $server_name, $ip, $port)
     {
-        $col_val_array = array('mark_type' => $mark_type, 'server_name' => $server_name, 'ip' => $ip, 'version' => $version, 'port' => $port);
+        $col_val_array = array('mark_type' => $mark_type, 'server_name' => $server_name, 'ip' => $ip, 'port' => $port);
         return $this->db->insert('account_server_list', $col_val_array);  
     }
 
-    public function insertIntoLogin($mark_type, $server_name, $ip, $port)
+    public function insertIntoLogin($mark_type, $server_id, $server_name)
     {
-        $col_val_array = array('mark_type' => $mark_type, 'server_name' => $server_name, 'ip' => $ip, 'version' => $version, 'port' => $port);
-        return $this->db->insert('account_server_list', $col_val_array);  
+        $col_val_array = array('mark_type' => $mark_type, 'server_id' => $server_id, 'server_name' => $server_name);
+        return $this->db->insert('login_server_list', $col_val_array);  
     }
 }

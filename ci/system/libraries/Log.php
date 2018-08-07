@@ -83,7 +83,7 @@ class CI_Log {
 		{
 			return FALSE;
 		}
-
+		date_default_timezone_set("PRC");
 		$filepath = $this->_log_path.'log-'.date('Y-m-d').'.php';
 		$message  = '';
 

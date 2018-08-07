@@ -61,6 +61,20 @@ class Mark extends CI_Controller
 		}
 	}
 
+	public function add_account()
+	{
+		$this->load->model('MarkModel', '', $this->db_config);
+		$res = $this->MarkModel->insert_account($_POST['global_id'], $_POST['server_name'], $_POST['ip'], $_POST['port']);
+		$this->Response->response(200, $res);
+	}
+
+	public function add_login()
+	{
+		$this->load->model('MarkModel', '', $this->db_config);
+		$res = $this->MarkModel->insert_login($_POST['server_id'], $_POST['server_name'], $_POST['ip'], $_POST['port']);
+		$this->Response->response(200, $res);
+	}
+
 	public function insert()
 	{
 		$this->load->model('MarkModel', '', $this->db_config);
@@ -124,18 +138,26 @@ class Mark extends CI_Controller
 
 		if (is_array_key_valid($data, 'login_server_name', array(''))) {
 			$names = explode(';', $data['login_server_name']);
-			//TODO
-			// if ($this->MarkModel->insertIntoLogin($data['mark_type'], $data['combat_url']) === false) {
-			// 	$this->Response->response(500);
-			// 	return;
-			// }
+			foreach($names as $name){
+				$data = $this->MarkModel->get_login_table_by_name($name);
+				if($this->MarkModel->insertIntoLogin($data['mark_type'], $data[0]->id, $data[0]->server_name === false)){
+					$this->Response->response(500);
+					return;
+				}
+			}
 		}
 
 		if (is_array_key_valid($data, 'account_server_name', array(''))) {
 			$names = explode(';', $data['account_server_name']);
+			log_message('error', $names);
 			foreach($names as $name){
-				$data = $this->MarkModel->get_account_table_by_name($name);
-				$this->MarkModel->insertIntoAccount($mark_type, $data[0]['server_name'], $data[0]['ip'], $data[0]['port']);
+				log_message('error', $name);
+				$data_res = $this->MarkModel->get_account_table_by_name($name);
+				log_message('error', print_r($data_res, true));
+				if($this->MarkModel->insertIntoAccount($data['mark_type'], $data_res[0]->server_name, $data_res[0]->ip, $data_res[0]->port) === false){
+					$this->Response->response(500);
+					return;
+				}
 			}
 			//TODO结果检查
 		}
